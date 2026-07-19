@@ -75,6 +75,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
+    // CreateMod Maven — Ponder (in-world scenes) + its transitive Flywheel dependency.
+    maven {
+        name = 'CreateMod (Ponder, Flywheel)'
+        url = 'https://maven.createmod.net'
+    }
 }
 
 // A configuration that just collects the dev-only test-mod jars. It is NOT on any
@@ -94,6 +99,13 @@ dependencies {
     // --- AlmostUnified (soft dependency) ---
     // Compile against its API; the compat class is only loaded at runtime when the mod is present.
     compileOnly "maven.modrinth:almostunified:${almostunified_version}"
+
+    // --- Ponder (soft dependency) ---
+    // Compile against it; our ponder classes are only loaded at runtime when Ponder is present
+    // (guarded by ModList.isLoaded("ponder")). NOT bundled, NOT declared in mods.toml.
+    // In dev, the devMods entry loads Ponder + its transitive Flywheel so scenes are viewable.
+    compileOnly "net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}"
+    devMods "net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}"
 
     // --- Other dev-only test mods (Modrinth) ---
     // Jade: in-world inspection of the accumulator BE / cached crystals.
