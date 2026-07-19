@@ -1,0 +1,11 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [ " F ", "CDC", " C " ],
+    "key": {
+        "F": { "item": "minecraft:blast_furnace" },
+        "C": { "item": "minecraft:coal_block" },
+        "D": { "item": "beepsresourcegenerators:modulator_base" }
+    },
+    "result": { "count": 1, "id": "beepsresourcegenerators:auto_smelt_modulator" }
+}

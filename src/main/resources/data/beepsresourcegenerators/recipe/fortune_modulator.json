@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [ "LKL", "EDE", "LEL" ],
+    "key": {
+        "L": { "item": "minecraft:lapis_lazuli" },
+        "E": { "item": "minecraft:emerald" },
+        "D": { "item": "beepsresourcegenerators:modulator_base" },
+        "K": { "type": "neoforge:components", "items": "minecraft:enchanted_book",
+               "components": { "minecraft:stored_enchantments": { "levels": { "minecraft:fortune": 3 } } } }
+    },
+    "result": { "count": 1, "id": "beepsresourcegenerators:fortune_modulator" }
+}

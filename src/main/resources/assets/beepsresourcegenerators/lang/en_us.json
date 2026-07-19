@@ -23,6 +23,7 @@
     "block.beepsresourcegenerators.crystal_infuser": "Crystal Infuser",
     "block.beepsresourcegenerators.resonator": "Resonator",
     "block.beepsresourcegenerators.placed_crystal": "Crystal",
+    "block.beepsresourcegenerators.modulator_base": "Modulator Base",
     "block.beepsresourcegenerators.silk_touch_modulator": "Modulator: Silk Touch",
     "block.beepsresourcegenerators.fortune_modulator": "Modulator: Fortune",
     "block.beepsresourcegenerators.auto_smelt_modulator": "Modulator: Auto-Smelt",

@@ -1,0 +1,11 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [ "SIS", "IAI", "SIS" ],
+    "key": {
+        "S": { "item": "minecraft:smooth_stone" },
+        "I": { "item": "minecraft:iron_ingot" },
+        "A": { "item": "minecraft:amethyst_shard" }
+    },
+    "result": { "count": 1, "id": "beepsresourcegenerators:modulator_base" }
+}

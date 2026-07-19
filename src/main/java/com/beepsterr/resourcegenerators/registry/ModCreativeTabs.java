@@ -38,6 +38,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RESONATOR.get());
                 output.accept(ModItems.CRYSTAL_FORMER.get());
                 output.accept(ModItems.CRYSTAL_INFUSER.get());
+                output.accept(ModItems.MODULATOR_BASE.get());
                 output.accept(ModItems.SILK_TOUCH_MODULATOR.get());
                 output.accept(ModItems.FORTUNE_MODULATOR.get());
                 output.accept(ModItems.AUTO_SMELT_MODULATOR.get());
