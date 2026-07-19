@@ -38,6 +38,10 @@ public final class Config {
             .comment("How many blocks around the resonator are scanned for hostile mobs.")
             .defineInRange("mobDisruptionRadius", 6, 0, 32);
 
+    public static final ModConfigSpec.IntValue MAX_FORTUNE_LEVEL = BUILDER
+            .comment("Cap on the effective Fortune level from stacked Fortune modulators (0 = uncapped).")
+            .defineInRange("maxFortuneLevel", 5, 0, 100);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean isBlacklisted(ResourceLocation blockId) {

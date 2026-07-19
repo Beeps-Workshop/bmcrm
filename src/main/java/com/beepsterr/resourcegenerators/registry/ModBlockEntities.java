@@ -43,6 +43,8 @@ public final class ModBlockEntities {
     /** One BE type shared by all Modulator blocks (add more blocks to the .of(...) as they're added). */
     public static final Supplier<BlockEntityType<ModulatorBlockEntity>> MODULATOR =
             REGISTER.register("modulator", () -> BlockEntityType.Builder
-                    .of(ModulatorBlockEntity::new, ModBlocks.SILK_TOUCH_MODULATOR.get())
+                    .of(ModulatorBlockEntity::new,
+                            ModBlocks.SILK_TOUCH_MODULATOR.get(),
+                            ModBlocks.FORTUNE_MODULATOR.get())
                     .build(null));
 }

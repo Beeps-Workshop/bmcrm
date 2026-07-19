@@ -49,7 +49,8 @@ public class BrgPonderPlugin implements PonderPlugin {
         helper.addToTag(USING_CRYSTALS)
                 .add(ModItems.RESONATOR.getId())
                 .add(ModItems.CRYSTAL.getId())
-                .add(ModItems.SILK_TOUCH_MODULATOR.getId());
+                .add(ModItems.SILK_TOUCH_MODULATOR.getId())
+                .add(ModItems.FORTUNE_MODULATOR.getId());
     }
 
     @Override
