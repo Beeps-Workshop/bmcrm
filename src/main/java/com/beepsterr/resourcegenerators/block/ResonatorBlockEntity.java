@@ -28,6 +28,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -269,6 +273,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                     tool = fortuneTools.computeIfAbsent(fortuneLevel, lvl -> buildFortuneTool(registries, lvl));
                 }
             }
+            // Auto-smelt if the crystal's beam to the resonator passes through an Auto-Smelt modulator.
+            boolean autoSmelt = beamHitsAutoSmelt(p, center);
 
             LootTable table = server.reloadableRegistries().getLootTable(block.getLootTable());
             LootParams params = new LootParams.Builder(level)
@@ -283,14 +289,17 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             }
             for (ItemStack drop : drops) {
                 ItemStack out = drop.copy();
+                if (autoSmelt) {
+                    out = smelt(server, level, out); // raw ore -> ingot before unification
+                }
                 if (ALMOST_UNIFIED) {
                     // Collapse duplicate/disabled ore variants to the pack's preferred item.
                     out = com.beepsterr.resourcegenerators.compat.AlmostUnifiedCompat.unify(out);
                 }
                 insertOutput(out);
             }
-            // Visual flair: a burst of dust at the crystal + a stream of the item to the resonator.
-            spawnGenerateParticles(level, p, resource.color());
+            // Visual flair: a burst of dust at the crystal (red while auto-smelting) + a stream to the resonator.
+            spawnGenerateParticles(level, p, autoSmelt ? 0xE23D28 : resource.color());
             spawnFlingParticles(level, p, center, drops.get(0));
         }
         setChanged();
@@ -337,6 +346,39 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         registries.lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.FORTUNE)
                 .ifPresent(holder -> pick.enchant(holder, level));
         return pick;
+    }
+
+    /** Whether the crystal->resonator beam passes through any Auto-Smelt modulator (no occlusion). */
+    private boolean beamHitsAutoSmelt(BlockPos crystal, BlockPos center) {
+        Vec3 from = Vec3.atCenterOf(crystal);
+        Vec3 to = Vec3.atCenterOf(center);
+        for (ModulatorEntry m : cachedModulators) {
+            if (m.modulation() == Modulation.AUTO_SMELT
+                    && new AABB(m.pos()).clip(from, to).isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Smelt one stack via a furnace recipe (count preserved); returned unchanged if it can't be smelted. */
+    private static ItemStack smelt(MinecraftServer server, ServerLevel level, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return stack;
+        }
+        SingleRecipeInput input = new SingleRecipeInput(stack);
+        Optional<RecipeHolder<SmeltingRecipe>> recipe =
+                server.getRecipeManager().getRecipeFor(RecipeType.SMELTING, input, level);
+        if (recipe.isEmpty()) {
+            return stack;
+        }
+        ItemStack result = recipe.get().value().assemble(input, level.registryAccess());
+        if (result.isEmpty()) {
+            return stack;
+        }
+        ItemStack out = result.copy();
+        out.setCount(result.getCount() * stack.getCount());
+        return out;
     }
 
     /** A small colored dust burst at a crystal that just generated. */

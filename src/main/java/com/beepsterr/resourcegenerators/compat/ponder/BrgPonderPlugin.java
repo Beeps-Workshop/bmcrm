@@ -50,7 +50,8 @@ public class BrgPonderPlugin implements PonderPlugin {
                 .add(ModItems.RESONATOR.getId())
                 .add(ModItems.CRYSTAL.getId())
                 .add(ModItems.SILK_TOUCH_MODULATOR.getId())
-                .add(ModItems.FORTUNE_MODULATOR.getId());
+                .add(ModItems.FORTUNE_MODULATOR.getId())
+                .add(ModItems.AUTO_SMELT_MODULATOR.getId());
     }
 
     @Override
@@ -74,6 +75,9 @@ public class BrgPonderPlugin implements PonderPlugin {
         helper.addStoryBoard(resonator, "modulator/fortune", BrgPonderScenes::modulatorFortune).highlightAllTags();
         helper.addStoryBoard(ModBlocks.FORTUNE_MODULATOR.getId(), "modulator/fortune",
                 BrgPonderScenes::modulatorFortune).highlightAllTags();
+        helper.addStoryBoard(resonator, "modulator/auto_smelt", BrgPonderScenes::modulatorAutoSmelt).highlightAllTags();
+        helper.addStoryBoard(ModBlocks.AUTO_SMELT_MODULATOR.getId(), "modulator/auto_smelt",
+                BrgPonderScenes::modulatorAutoSmelt).highlightAllTags();
 
         // Crystal-creation tutorial (2 pages), but each machine opens on its own step.
         // Crystal item + Former: forming first, then infusing.

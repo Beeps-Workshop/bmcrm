@@ -45,6 +45,12 @@ public final class ModBlocks {
                     props -> new ModulatorBlock(Modulation.FORTUNE, AreaShape.PLUS, 2, 0, props),
                     BlockBehaviour.Properties.of().strength(3.5f));
 
+    /** Auto-Smelt modulator: beam-based (no area) — smelts a crystal whose beam to the resonator crosses it. */
+    public static final DeferredBlock<ModulatorBlock> AUTO_SMELT_MODULATOR =
+            REGISTER.registerBlock("auto_smelt_modulator",
+                    props -> new ModulatorBlock(Modulation.AUTO_SMELT, AreaShape.BOX, 0, 0, props),
+                    BlockBehaviour.Properties.of().strength(3.5f));
+
     /** A crystal placed in the world (the crystal item places this). Non-solid, walk-through. */
     public static final DeferredBlock<PlacedCrystalBlock> PLACED_CRYSTAL =
             REGISTER.registerBlock("placed_crystal", PlacedCrystalBlock::new,

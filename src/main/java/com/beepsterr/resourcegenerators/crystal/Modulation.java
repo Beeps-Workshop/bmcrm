@@ -12,7 +12,9 @@ public enum Modulation implements StringRepresentable {
     /** Rolls the crystal's ore with a Silk Touch tool, so it yields the ore block instead of drops. */
     SILK_TOUCH("silk_touch", 0xD8E8FF),
     /** Rolls with Fortune (level = number of overlapping Fortune modulators). Suppressed by Silk Touch. */
-    FORTUNE("fortune", 0x74E88C);
+    FORTUNE("fortune", 0x74E88C),
+    /** Smelts the output (raw ore -> ingot). Applies when the crystal->resonator beam passes through it. */
+    AUTO_SMELT("auto_smelt", 0xE8843C);
 
     public static final Codec<Modulation> CODEC = StringRepresentable.fromEnum(Modulation::values);
 
