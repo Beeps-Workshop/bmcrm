@@ -287,6 +287,75 @@ public final class BrgPonderScenes {
         scene.markAsFinished();
     }
 
+    /** Modulator detail scene: Fortune adds ore drops over a "+", stacks, and yields to Silk Touch. */
+    public static void modulatorFortune(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("modulator_fortune", "Modulator: Fortune");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+
+        // Resonator + the crystal row (excluding the modulator slot at (7,1,5)).
+        BlockPos resonator = util.grid().at(7, 1, 9);
+        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
+        Selection crystals = util.select().fromTo(5, 1, 5, 9, 1, 5)
+                .substract(util.select().position(util.grid().at(7, 1, 5)));
+        scene.world().showSection(crystals, Direction.DOWN);
+        scene.idle(10);
+
+        // The middle Fortune modulator appears.
+        BlockPos fortune = util.grid().at(7, 1, 5);
+        scene.world().showSection(util.select().position(fortune), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("Fortune Modulators apply the Fortune enchantment on the crystal whenever it generates resources")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(fortune));
+        scene.idle(100);
+
+        // Its "+" footprint (arm 2 = a 5x5 plus): two crossing arms.
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("The Fortune Modulator operates on a 5x5 plus")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(fortune));
+        scene.overlay().showOutline(PonderPalette.GREEN, "fortune_x", util.select().fromTo(5, 1, 5, 9, 1, 5), 90);
+        scene.overlay().showOutline(PonderPalette.GREEN, "fortune_z", util.select().fromTo(7, 1, 3, 7, 1, 7), 90);
+        scene.idle(100);
+
+        // Two more Fortune modulators -> stacking.
+        scene.world().showSection(util.select().position(util.grid().at(4, 1, 5)), Direction.DOWN);
+        scene.world().showSection(util.select().position(util.grid().at(10, 1, 5)), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("Multiple Fortune Modulators can affect one crystal")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(5, 1, 5)));
+        scene.idle(90);
+
+        // The Silk Touch modulator suppresses Fortune on the crystals it covers.
+        BlockPos silk = util.grid().at(9, 1, 4);
+        scene.world().showSection(util.select().position(silk), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("A Silk Touch Modulator disables the effects of any Fortune Modulators")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(silk));
+        scene.idle(50);
+        scene.overlay().showControls(util.vector().topOf(util.grid().at(8, 1, 5)), Pointing.DOWN, 60)
+                .withItem(new ItemStack(Items.BARRIER));
+        scene.overlay().showControls(util.vector().topOf(util.grid().at(9, 1, 5)), Pointing.DOWN, 60)
+                .withItem(new ItemStack(Items.BARRIER));
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+
     // --- Crystal creation tutorial (shared by the crystal item, the Former and the Infuser) ---
     // Structure: crystal/former_infuser.nbt — Infuser (5,1,7), a blank crystal (7,1,7), Former (9,1,7).
 

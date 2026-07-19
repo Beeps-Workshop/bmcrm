@@ -71,6 +71,9 @@ public class BrgPonderPlugin implements PonderPlugin {
         helper.addStoryBoard(resonator, "modulator/silk_touch", BrgPonderScenes::modulatorSilkTouch).highlightAllTags();
         helper.addStoryBoard(ModBlocks.SILK_TOUCH_MODULATOR.getId(), "modulator/silk_touch",
                 BrgPonderScenes::modulatorSilkTouch).highlightAllTags();
+        helper.addStoryBoard(resonator, "modulator/fortune", BrgPonderScenes::modulatorFortune).highlightAllTags();
+        helper.addStoryBoard(ModBlocks.FORTUNE_MODULATOR.getId(), "modulator/fortune",
+                BrgPonderScenes::modulatorFortune).highlightAllTags();
 
         // Crystal-creation tutorial (2 pages), but each machine opens on its own step.
         // Crystal item + Former: forming first, then infusing.
