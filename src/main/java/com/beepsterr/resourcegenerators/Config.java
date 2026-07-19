@@ -29,6 +29,15 @@ public final class Config {
                     "1.0 disables the penalty entirely; 0.5 halves the effective roll chance.")
             .defineInRange("rainEfficiency", 0.5, 0.0, 1.0);
 
+    public static final ModConfigSpec.DoubleValue MOB_EFFICIENCY = BUILDER
+            .comment("Roll-chance multiplier while a hostile mob is near the resonator (noisy neighbors).",
+                    "1.0 disables the penalty entirely; 0.5 halves the effective roll chance.")
+            .defineInRange("mobEfficiency", 0.5, 0.0, 1.0);
+
+    public static final ModConfigSpec.IntValue MOB_DISRUPTION_RADIUS = BUILDER
+            .comment("How many blocks around the resonator are scanned for hostile mobs.")
+            .defineInRange("mobDisruptionRadius", 6, 0, 32);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean isBlacklisted(ResourceLocation blockId) {
