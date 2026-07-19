@@ -43,8 +43,8 @@ public class ModulatorBlockEntity extends BlockEntity implements AreaPreview {
     @Override
     public List<AABB> getPreviewBoxes() {
         AreaShape shape = getShape();
-        if (shape == null) {
-            return List.of();
+        if (shape == null || getModulation() == Modulation.AUTO_SMELT) {
+            return List.of(); // beam-based modulators have no area box
         }
         return shape.previewBoxes(worldPosition, getHorizontalRadius(), getVerticalRadius());
     }

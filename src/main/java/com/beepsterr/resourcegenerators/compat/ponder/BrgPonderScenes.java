@@ -356,6 +356,70 @@ public final class BrgPonderScenes {
         scene.markAsFinished();
     }
 
+    /** Modulator detail scene: Auto-Smelt smelts crystals whose beam to the resonator crosses it. */
+    public static void modulatorAutoSmelt(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("modulator_auto_smelt", "Modulator: Auto-Smelt");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+
+        // Resonator + the crystal cluster close to the smelter (not the lone crystal or modulator yet).
+        BlockPos resonator = util.grid().at(9, 1, 7);
+        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(4, 1, 6, 5, 1, 8), Direction.DOWN);
+        scene.idle(10);
+
+        // The smelter appears between the cluster and the resonator.
+        BlockPos smelter = util.grid().at(7, 1, 7);
+        scene.world().showSection(util.select().position(smelter), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("The Auto-Smelt Modulator affects any crystals that sit between it and the Resonator")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(smelter));
+        scene.idle(100);
+
+        // One affected crystal would produce raw iron...
+        BlockPos crystal = util.grid().at(5, 1, 7);
+        scene.overlay().showOutline(PonderPalette.GREEN, "affected", util.select().position(crystal), 100);
+        scene.overlay().showControls(util.vector().topOf(crystal), Pointing.DOWN, 60)
+                .withItem(new ItemStack(Items.RAW_IRON));
+        scene.idle(70);
+        // ...but the smelter turns it into an ingot...
+        scene.overlay().showOutline(PonderPalette.OUTPUT, "smelter", util.select().position(smelter), 100);
+        scene.overlay().showControls(util.vector().topOf(smelter), Pointing.DOWN, 60)
+                .withItem(new ItemStack(Items.IRON_INGOT));
+        scene.idle(70);
+        // ...which is what comes out of the resonator.
+        scene.overlay().showControls(util.vector().topOf(resonator), Pointing.DOWN, 70)
+                .withItem(new ItemStack(Items.IRON_INGOT));
+        scene.idle(80);
+
+        // A lone crystal whose beam does not cross the smelter.
+        BlockPos lone = util.grid().at(7, 1, 4);
+        scene.world().showSection(util.select().position(lone), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutline(PonderPalette.GREEN, "lone", util.select().position(lone), 90);
+        scene.overlay().showControls(util.vector().topOf(lone), Pointing.DOWN, 60)
+                .withItem(new ItemStack(Items.RAW_IRON));
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("Any crystal that does not intersect an Auto-Smelt Modulator does not get affected")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(lone));
+        scene.idle(100);
+        // So it stays raw at the resonator.
+        scene.overlay().showControls(util.vector().topOf(resonator), Pointing.DOWN, 70)
+                .withItem(new ItemStack(Items.RAW_IRON));
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+
     // --- Crystal creation tutorial (shared by the crystal item, the Former and the Infuser) ---
     // Structure: crystal/former_infuser.nbt — Infuser (5,1,7), a blank crystal (7,1,7), Former (9,1,7).
 

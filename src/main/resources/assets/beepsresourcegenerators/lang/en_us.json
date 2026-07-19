@@ -25,6 +25,7 @@
     "block.beepsresourcegenerators.placed_crystal": "Crystal",
     "block.beepsresourcegenerators.silk_touch_modulator": "Modulator: Silk Touch",
     "block.beepsresourcegenerators.fortune_modulator": "Modulator: Fortune",
+    "block.beepsresourcegenerators.auto_smelt_modulator": "Modulator: Auto-Smelt",
 
     "beepsresourcegenerators.ponder.resonator_base.header": "The Resonator",
     "beepsresourcegenerators.ponder.resonator_base.text_1": "The Resonator interacts with nearby crystals",
@@ -53,6 +54,10 @@
     "beepsresourcegenerators.ponder.modulator_fortune.text_2": "The Fortune Modulator operates on a 5x5 plus",
     "beepsresourcegenerators.ponder.modulator_fortune.text_3": "Multiple Fortune Modulators can affect one crystal",
     "beepsresourcegenerators.ponder.modulator_fortune.text_4": "A Silk Touch Modulator disables the effects of any Fortune Modulators",
+
+    "beepsresourcegenerators.ponder.modulator_auto_smelt.header": "Modulator: Auto-Smelt",
+    "beepsresourcegenerators.ponder.modulator_auto_smelt.text_1": "The Auto-Smelt Modulator affects any crystals that sit between it and the Resonator",
+    "beepsresourcegenerators.ponder.modulator_auto_smelt.text_2": "Any crystal that does not intersect an Auto-Smelt Modulator does not get affected",
 
     "beepsresourcegenerators.ponder.tag.creating_crystals": "Creating Crystals",
     "beepsresourcegenerators.ponder.tag.creating_crystals.description": "Forming blank crystals and infusing them with a resource",

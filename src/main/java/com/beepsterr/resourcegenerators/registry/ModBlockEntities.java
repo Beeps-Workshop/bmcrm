@@ -45,6 +45,7 @@ public final class ModBlockEntities {
             REGISTER.register("modulator", () -> BlockEntityType.Builder
                     .of(ModulatorBlockEntity::new,
                             ModBlocks.SILK_TOUCH_MODULATOR.get(),
-                            ModBlocks.FORTUNE_MODULATOR.get())
+                            ModBlocks.FORTUNE_MODULATOR.get(),
+                            ModBlocks.AUTO_SMELT_MODULATOR.get())
                     .build(null));
 }
