@@ -44,9 +44,8 @@
     "beepsresourcegenerators.ponder.resonator_modulators.text_3": "Some Modulators have an area of effect, and others affect the entire system",
 
     "beepsresourcegenerators.ponder.modulator_silk_touch.header": "Modulator: Silk Touch",
-    "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "Crystals around a Resonator yield raw ore",
-    "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "A Modulator changes how nearby crystals behave",
-    "beepsresourcegenerators.ponder.modulator_silk_touch.text_3": "Silk Touch: crystals in its area yield the ore block itself",
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "The Silk Touch Modulator allows you to obtain ore blocks instead of raw ore",
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "The Silk Touch Modulator affects all crystals directly surrounding it",
 
     "beepsresourcegenerators.ponder.shared.tier_label": "%s (%s%% Chance)",
 

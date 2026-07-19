@@ -240,7 +240,7 @@ public final class BrgPonderScenes {
         scene.markAsFinished();
     }
 
-    /** Scene 3: a Silk Touch Modulator makes covered crystals yield the ore block. */
+    /** Modulator detail scene: Silk Touch turns the surrounding crystals' output into ore blocks. */
     public static void modulatorSilkTouch(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("modulator_silk_touch", "Modulator: Silk Touch");
         scene.configureBasePlate(0, 0, 15);
@@ -248,48 +248,40 @@ public final class BrgPonderScenes {
         scene.showBasePlate();
         scene.idle(10);
         scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(1), Direction.DOWN); // everything: resonator, crystals, modulator
         scene.idle(15);
 
-        // Resonator plus two crystal patches.
         BlockPos resonator = util.grid().at(7, 1, 7);
-        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
-        scene.idle(5);
-        Selection leftPatch = util.select().fromTo(3, 1, 6, 5, 1, 8);
-        Selection rightCrystals = util.select().fromTo(9, 1, 6, 11, 1, 8)
-                .substract(util.select().position(util.grid().at(10, 1, 7)));
-        scene.world().showSection(leftPatch, Direction.DOWN);
-        scene.world().showSection(rightCrystals, Direction.DOWN);
-        scene.idle(10);
         scene.overlay().showText(80)
                 .attachKeyFrame()
-                .text("Crystals around a Resonator yield raw ore")
-                .placeNearTarget()
-                .pointAt(util.vector().topOf(util.grid().at(4, 1, 7)));
-        scene.overlay().showControls(util.vector().centerOf(util.grid().at(4, 2, 7)), Pointing.DOWN, 80)
+                .text("The Silk Touch Modulator allows you to obtain ore blocks instead of raw ore")
+                .pointAt(util.vector().topOf(util.grid().at(10, 1, 7)));
+        scene.idle(90);
+
+        // Crystals WITHOUT a modulator -> raw ore comes out of the Resonator.
+        scene.overlay().showOutline(PonderPalette.WHITE, "plain_patch",
+                util.select().fromTo(3, 1, 6, 5, 1, 8), 70);
+        scene.overlay().showControls(util.vector().topOf(resonator), Pointing.DOWN, 70)
                 .withItem(new ItemStack(Items.RAW_COPPER));
-        scene.idle(90);
+        scene.idle(80);
 
-        // The Modulator drops in at the centre of the right patch.
-        BlockPos modulator = util.grid().at(10, 1, 7);
-        scene.world().showSection(util.select().position(modulator), Direction.DOWN);
-        scene.idle(10);
+        // Crystals WITHIN the modulator's area -> the ore block comes out instead.
+        scene.overlay().showOutline(PonderPalette.BLUE, "modulated_patch",
+                util.select().fromTo(9, 1, 6, 11, 1, 8), 70);
+        scene.overlay().showControls(util.vector().topOf(resonator), Pointing.DOWN, 70)
+                .withItem(new ItemStack(Items.COPPER_ORE));
+        scene.idle(80);
+
+        // Its range: the crystals directly surrounding it.
         scene.overlay().showText(80)
                 .attachKeyFrame()
-                .text("A Modulator changes how nearby crystals behave")
+                .text("The Silk Touch Modulator affects all crystals directly surrounding it")
                 .placeNearTarget()
-                .pointAt(util.vector().topOf(modulator));
-        scene.idle(90);
-
-        // Highlight its flat 3x3 footprint.
-        Selection area = util.select().fromTo(9, 1, 6, 11, 1, 8);
-        scene.overlay().showOutline(PonderPalette.BLUE, "silk_area", area, 100);
-        scene.overlay().showText(90)
-                .attachKeyFrame()
-                .text("Silk Touch: crystals in its area yield the ore block itself")
-                .placeNearTarget()
-                .pointAt(util.vector().topOf(util.grid().at(10, 1, 8)));
-        scene.overlay().showControls(util.vector().centerOf(util.grid().at(10, 2, 7)), Pointing.DOWN, 90)
-                .withItem(new ItemStack(Items.COPPER_ORE));
+                .pointAt(util.vector().topOf(util.grid().at(10, 1, 7)));
+        scene.idle(40);
+        scene.overlay().showOutline(PonderPalette.BLUE, "modulator_range",
+                util.select().fromTo(9, 1, 6, 11, 1, 8), 90);
         scene.idle(100);
 
         scene.markAsFinished();
