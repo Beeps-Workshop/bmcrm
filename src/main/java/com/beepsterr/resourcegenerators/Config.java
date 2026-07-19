@@ -42,6 +42,10 @@ public final class Config {
             .comment("Cap on the effective Fortune level from stacked Fortune modulators (0 = uncapped).")
             .defineInRange("maxFortuneLevel", 5, 0, 100);
 
+    public static final ModConfigSpec.IntValue WORK_INTERVAL = BUILDER
+            .comment("Ticks between resonator work cycles (20 ticks = 1 second). Higher = slower generation.")
+            .defineInRange("workIntervalTicks", 300, 20, 24000);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean isBlacklisted(ResourceLocation blockId) {
