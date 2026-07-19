@@ -67,8 +67,6 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     /** Downward reach is shallower — the resonator shouldn't dig far below itself. */
     private static final int RADIUS_DOWN = 2;
     private static final int RESCAN_INTERVAL = 200;
-    /** Ticks between work cycles. Kept slow — each crystal only *maybe* generates (tier roll chance). */
-    private static final int WORK_INTERVAL = 100;
     private static final int MAX_CRYSTALS = 512;
 
     /** Whether AlmostUnified is present — gates loading the compat class (soft dependency). */
@@ -101,7 +99,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? workProgress : WORK_INTERVAL;
+            return index == 0 ? workProgress : Config.WORK_INTERVAL.get();
         }
 
         @Override
@@ -155,7 +153,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             // Charge the work bar only while there's something to do; it pauses when idle or full.
             if (!be.cachedPositions.isEmpty() && !be.isOutputFull()) {
                 be.workProgress++;
-                if (be.workProgress >= WORK_INTERVAL) {
+                if (be.workProgress >= Config.WORK_INTERVAL.get()) {
                     be.workProgress = 0;
                     be.doWork(serverLevel, pos);
                 }
