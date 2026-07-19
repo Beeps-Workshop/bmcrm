@@ -8,6 +8,7 @@ import com.beepsterr.resourcegenerators.block.ModulatorBlock;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlock;
 import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -32,6 +33,11 @@ public final class ModBlocks {
     public static final DeferredBlock<ResonatorBlock> RESONATOR =
             REGISTER.registerBlock("resonator", ResonatorBlock::new,
                     BlockBehaviour.Properties.of().strength(4.0f));
+
+    /** Shared crafting frame that each Modulator is built on top of. */
+    public static final DeferredBlock<Block> MODULATOR_BASE =
+            REGISTER.registerBlock("modulator_base", Block::new,
+                    BlockBehaviour.Properties.of().strength(3.5f).sound(SoundType.METAL));
 
     /** Silk Touch modulator: a flat 3x3x1 box (covered crystals yield ore blocks). Does not stack. */
     public static final DeferredBlock<ModulatorBlock> SILK_TOUCH_MODULATOR =

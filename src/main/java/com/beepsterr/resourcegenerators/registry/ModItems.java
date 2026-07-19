@@ -39,6 +39,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> RESONATOR =
             REGISTER.registerSimpleBlockItem("resonator", ModBlocks.RESONATOR);
 
+    /** BlockItem for the Modulator Base frame. */
+    public static final DeferredItem<BlockItem> MODULATOR_BASE =
+            REGISTER.registerSimpleBlockItem("modulator_base", ModBlocks.MODULATOR_BASE);
+
     /** BlockItem for the Silk Touch Modulator. */
     public static final DeferredItem<BlockItem> SILK_TOUCH_MODULATOR =
             REGISTER.registerSimpleBlockItem("silk_touch_modulator", ModBlocks.SILK_TOUCH_MODULATOR);
