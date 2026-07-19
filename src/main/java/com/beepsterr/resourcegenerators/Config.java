@@ -44,7 +44,7 @@ public final class Config {
 
     public static final ModConfigSpec.IntValue WORK_INTERVAL = BUILDER
             .comment("Ticks between resonator work cycles (20 ticks = 1 second). Higher = slower generation.")
-            .defineInRange("workIntervalTicks", 300, 20, 24000);
+            .defineInRange("workIntervalTicks", 400, 20, 24000);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
