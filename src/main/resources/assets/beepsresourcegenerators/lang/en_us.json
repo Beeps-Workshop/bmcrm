@@ -47,6 +47,11 @@
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "The Silk Touch Modulator allows you to obtain ore blocks instead of raw ore",
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "The Silk Touch Modulator affects all crystals directly surrounding it",
 
+    "beepsresourcegenerators.ponder.tag.creating_crystals": "Creating Crystals",
+    "beepsresourcegenerators.ponder.tag.creating_crystals.description": "Forming blank crystals and infusing them with a resource",
+    "beepsresourcegenerators.ponder.tag.using_crystals": "Using Crystals",
+    "beepsresourcegenerators.ponder.tag.using_crystals.description": "Resonators, and the Modulators that shape what they produce",
+
     "beepsresourcegenerators.ponder.shared.tier_label": "%s (%s%% Chance)",
 
     "beepsresourcegenerators.ponder.crystal_blank.header": "Blank Crystals",
