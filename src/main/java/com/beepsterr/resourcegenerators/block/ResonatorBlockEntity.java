@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.block;
 
+import com.beepsterr.resourcegenerators.Config;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
@@ -169,6 +170,12 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         RandomSource random = level.getRandom();
         ItemStack tool = new ItemStack(Items.NETHERITE_PICKAXE); // proper tier, no silk touch -> raw drops
 
+        // Rain penalty: a crystal exposed to the sky in the rain — or any crystal when the resonator
+        // itself is rained on — rolls at reduced efficiency. Skipped entirely in clear weather.
+        double rainEfficiency = Config.RAIN_EFFICIENCY.get();
+        boolean weatherPenalty = rainEfficiency < 1.0 && level.isRaining();
+        boolean resonatorRained = weatherPenalty && level.isRainingAt(center);
+
         for (BlockPos p : cachedPositions) {
             if (!(level.getBlockEntity(p) instanceof PlacedCrystalBlockEntity crystal)) {
                 continue;
@@ -189,7 +196,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
                 crystal.setOwner(center); // claim (was unowned or orphaned)
             }
 
-            if (random.nextFloat() >= data.tier().value().rollChance()) {
+            float rollChance = data.tier().value().rollChance();
+            if (weatherPenalty && (resonatorRained || level.isRainingAt(p))) {
+                rollChance *= (float) rainEfficiency;
+            }
+            if (random.nextFloat() >= rollChance) {
                 continue; // this crystal didn't generate this cycle
             }
             CrystalResource resource = data.resource().get();
