@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "beepsresourcegenerators:block/crystal_infuser" },
+        "facing=east":  { "model": "beepsresourcegenerators:block/crystal_infuser", "y": 90 },
+        "facing=south": { "model": "beepsresourcegenerators:block/crystal_infuser", "y": 180 },
+        "facing=west":  { "model": "beepsresourcegenerators:block/crystal_infuser", "y": 270 }
+    }
+}

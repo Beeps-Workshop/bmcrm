@@ -1,0 +1,7 @@
+{
+    "level": 2,
+    "color": "#B57EDC",
+    "roll_chance": 0.08,
+    "base_ingredient": { "item": "minecraft:tinted_glass" },
+    "catalyst_ingredient": { "item": "minecraft:amethyst_shard" }
+}

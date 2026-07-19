@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+out/
+src/generated/resources/.cache/
+
+# NeoForge / ModDevGradle
+run/
+runs/
+.neoforge/
+
+# IDE — IntelliJ (ignore everything except the shared run configurations)
+*.iml
+.idea/*
+!.idea/runConfigurations/
+
+# IDE — Eclipse / VSCode
+.settings/
+.metadata/
+.classpath
+.project
+bin/
+.vscode/
+
+# OS
+.DS_Store

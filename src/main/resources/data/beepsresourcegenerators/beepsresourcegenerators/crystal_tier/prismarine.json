@@ -1,0 +1,7 @@
+{
+    "level": 3,
+    "color": "#5AC8B8",
+    "roll_chance": 0.12,
+    "base_ingredient": { "item": "minecraft:tinted_glass" },
+    "catalyst_ingredient": { "item": "minecraft:prismarine_crystals" }
+}
