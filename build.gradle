@@ -1,0 +1,149 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.AMAZON
+    }
+}
+
+neoForge {
+    version = neo_version
+
+    parchment {
+        mappingsVersion = parchment_mappings_version
+        minecraftVersion = parchment_minecraft_version
+    }
+
+    // Generate neoforge.mods.toml metadata replacements from gradle.properties.
+    validateAccessTransformers = true
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', mod_id, '--all',
+                    '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+// Include the datagen output on the runtime/resource path.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    mavenLocal()
+    // JEI + many other Minecraft mods are published here.
+    maven {
+        name = 'BlameJared (JEI, CraftTweaker, ...)'
+        url = 'https://maven.blamejared.com/'
+    }
+    // Modrinth Maven — used to pull Jade / Mekanism (dev-only test mods) by version id.
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
+// A configuration that just collects the dev-only test-mod jars. It is NOT on any
+// classpath — FML in dev does not load mods from the classpath, only from run/mods
+// (and the mod under development). The copyDevMods task below syncs these into run/mods.
+configurations {
+    devMods
+}
+
+dependencies {
+    // --- JEI (Just Enough Items) ---
+    // Compile against the API; the full mod is loaded at runtime from run/mods (see devMods).
+    compileOnly "mezz.jei:jei-1.21.1-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
+    devMods "mezz.jei:jei-1.21.1-neoforge:${jei_version}"
+
+    // --- AlmostUnified (soft dependency) ---
+    // Compile against its API; the compat class is only loaded at runtime when the mod is present.
+    compileOnly "maven.modrinth:almostunified:${almostunified_version}"
+
+    // --- Other dev-only test mods (Modrinth) ---
+    // Jade: in-world inspection of the accumulator BE / cached crystals.
+    devMods "maven.modrinth:jade:${jade_version}"
+    // Mekanism: modded ores (osmium, tin, lead, uranium, fluorite) with c: tags,
+    // for testing the crystal auto-detection / tag-scanning feature.
+    devMods "maven.modrinth:mekanism:${mekanism_version}"
+    // NOTE: Thermal Series has no 1.21.1 release (tops out at MC 1.20.1), so it is not included.
+}
+
+// Sync the dev-only test mods into run/mods so FML loads them. Runs automatically
+// before any run task. `Sync` mirrors the folder, so bumping a version cleans up the
+// old jar. NOTE: manually-dropped jars in run/mods are removed by this task — add
+// extra test mods to the `devMods` configuration above instead.
+var copyDevMods = tasks.register('copyDevMods', Sync) {
+    from configurations.devMods
+    into layout.projectDirectory.dir('run/mods')
+}
+
+tasks.matching { it.name in ['runClient', 'runServer', 'runData'] }.configureEach {
+    dependsOn copyDevMods
+}
+
+// Token replacement for neoforge.mods.toml + pack.mcmeta.
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

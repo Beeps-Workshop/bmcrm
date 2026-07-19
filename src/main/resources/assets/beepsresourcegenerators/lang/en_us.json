@@ -1,0 +1,19 @@
+{
+    "itemGroup.beepsresourcegenerators": "Beeps' Resource Generators",
+
+    "block.beepsresourcegenerators.crystal_former": "Crystal Former",
+
+    "item.beepsresourcegenerators.crystal": "Crystal",
+    "item.beepsresourcegenerators.crystal.named": "%1$s Infused %2$s Crystal",
+    "item.beepsresourcegenerators.crystal.blank_named": "Blank %s Crystal",
+
+    "tooltip.beepsresourcegenerators.tier_line": "%1$s Crystal (%2$s%%)",
+    "tooltip.beepsresourcegenerators.produces": "Produces %s",
+    "tooltip.beepsresourcegenerators.infusing": "Infusing: %s (%s/%s)",
+    "tooltip.beepsresourcegenerators.uninfused": "Uninfused — needs a Crystal Infuser",
+    "tooltip.beepsresourcegenerators.crystal.blank": "Uninitialised crystal",
+
+    "block.beepsresourcegenerators.crystal_infuser": "Crystal Infuser",
+    "block.beepsresourcegenerators.resonator": "Resonator",
+    "block.beepsresourcegenerators.placed_crystal": "Crystal"
+}

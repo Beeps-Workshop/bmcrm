@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "": [
+            { "model": "beepsresourcegenerators:block/placed_crystal" },
+            { "model": "beepsresourcegenerators:block/placed_crystal", "y": 90 },
+            { "model": "beepsresourcegenerators:block/placed_crystal", "y": 180 },
+            { "model": "beepsresourcegenerators:block/placed_crystal", "y": 270 }
+        ]
+    }
+}

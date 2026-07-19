@@ -1,0 +1,8 @@
+{
+    "replace": false,
+    "values": [
+        "beepsresourcegenerators:crystal_former",
+        "beepsresourcegenerators:crystal_infuser",
+        "beepsresourcegenerators:resonator"
+    ]
+}
