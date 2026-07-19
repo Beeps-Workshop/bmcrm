@@ -24,6 +24,11 @@ public final class Config {
                     List.of("minecraft:nether_gold_ore"),
                     o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
 
+    public static final ModConfigSpec.DoubleValue RAIN_EFFICIENCY = BUILDER
+            .comment("Roll-chance multiplier for a crystal exposed to rain (or whose resonator is rained on).",
+                    "1.0 disables the penalty entirely; 0.5 halves the effective roll chance.")
+            .defineInRange("rainEfficiency", 0.5, 0.0, 1.0);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean isBlacklisted(ResourceLocation blockId) {
