@@ -1,16 +1,32 @@
 package com.beepsterr.resourcegenerators.compat.ponder;
 
+import com.beepsterr.resourcegenerators.crystal.CrystalResource;
+import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.OreTagResource;
+import com.beepsterr.resourcegenerators.item.CrystalItem;
+import com.beepsterr.resourcegenerators.registry.ModItems;
+import com.beepsterr.resourcegenerators.registry.ModRegistries;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.ParticleEmitter;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Ponder storyboards for the Resonator. The starting layouts are authored in-world and loaded from
@@ -22,116 +38,203 @@ public final class BrgPonderScenes {
 
     private BrgPonderScenes() {}
 
-    // --- resonator_base.nbt layout ---
-    private static final int[] BASE_RESONATOR = {7, 1, 10};
-    private static final int[][] BASE_CRYSTALS = {{5, 1, 7}, {7, 1, 7}, {9, 1, 7}};
+    // --- resonator/basics.nbt layout (Scenes 1 & 2) ---
+    private static final int[] BASICS_RESONATOR_A = {5, 1, 7};
+    private static final int[] BASICS_RESONATOR_B = {9, 1, 7};
+    private static final int[] BASICS_CRYSTAL = {7, 1, 7};
 
-    // --- resonator_multiple.nbt layout ---
-    private static final int[] MULTI_RESONATOR_A = {7, 1, 10};
-    private static final int[] MULTI_RESONATOR_B = {7, 1, 4};
-    private static final int[][] MULTI_CRYSTALS = {{5, 1, 7}, {7, 1, 7}, {9, 1, 7}};
-    private static final int[] MULTI_CONTESTED = {7, 1, 7};
+    // --- resonator/modulators.nbt layout (Scene 3) ---
+    private static final int[] MOD_RESONATOR = {7, 1, 9};
+    private static final int[] MOD_MODULATOR = {7, 1, 5};
 
     private static BlockPos pos(SceneBuildingUtil util, int[] p) {
         return util.grid().at(p[0], p[1], p[2]);
     }
 
-    /** Scene 1: a Resonator surrounded by crystals, generating resources. */
+    /** Scene 1: how the Resonator works — interaction, dissonance, multiple crystals, the Tuning Fork. */
     public static void resonatorBase(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("resonator_base", "Generating resources with the Resonator");
+        scene.title("resonator_base", "The Resonator");
         scene.configureBasePlate(0, 0, 15);
         scene.scaleSceneView(0.6f);
         scene.showBasePlate();
         scene.idle(10);
         scene.world().showSection(util.select().layer(0), Direction.UP);
-        scene.idle(15);
+        scene.idle(10);
 
-        BlockPos resonator = pos(util, BASE_RESONATOR);
-        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
-        scene.idle(5);
+        BlockPos resonatorA = pos(util, BASICS_RESONATOR_A);
+        BlockPos crystal = pos(util, BASICS_CRYSTAL);
+        scene.world().showSection(util.select().position(resonatorA), Direction.DOWN);
+        scene.world().showSection(util.select().position(crystal), Direction.DOWN);
+        scene.idle(10);
         scene.overlay().showText(70)
                 .attachKeyFrame()
-                .text("The Resonator generates resources all on its own")
-                .placeNearTarget()
-                .pointAt(util.vector().blockSurface(resonator, Direction.WEST));
-        scene.idle(80);
-
-        for (int[] c : BASE_CRYSTALS) {
-            scene.world().showSection(util.select().position(pos(util, c)), Direction.DOWN);
-            scene.idle(4);
-        }
-        scene.idle(10);
-        scene.overlay().showText(80)
-                .attachKeyFrame()
-                .text("Surround it with crystals — each one adds its resource to the pool")
-                .placeNearTarget()
-                .pointAt(util.vector().topOf(pos(util, BASE_CRYSTALS[0])));
-        scene.idle(90);
-
-        ParticleEmitter spark = scene.effects()
-                .simpleParticleEmitter(ParticleTypes.ENCHANT, util.vector().of(0, 0.2, 0));
-        scene.effects().emitParticles(util.vector().topOf(resonator), spark, 5, 40);
-        scene.idle(20);
-        scene.overlay().showText(90)
-                .attachKeyFrame()
-                .text("Every so often it rolls a crystal and outputs that resource")
-                .placeNearTarget()
-                .pointAt(util.vector().blockSurface(resonator, Direction.EAST));
-        scene.idle(100);
-
-        scene.markAsFinished();
-    }
-
-    /** Scene 2: a crystal can only serve one Resonator; one caught between two breaks. */
-    public static void resonatorMultiple(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("resonator_multiple", "One crystal, one Resonator");
-        scene.configureBasePlate(0, 0, 15);
-        scene.scaleSceneView(0.6f);
-        scene.showBasePlate();
-        scene.idle(10);
-        scene.world().showSection(util.select().layer(0), Direction.UP);
-        scene.idle(15);
-
-        // First Resonator and its crystals.
-        BlockPos resonatorA = pos(util, MULTI_RESONATOR_A);
-        scene.world().showSection(util.select().position(resonatorA), Direction.DOWN);
-        scene.idle(5);
-        for (int[] c : MULTI_CRYSTALS) {
-            scene.world().showSection(util.select().position(pos(util, c)), Direction.DOWN);
-            scene.idle(4);
-        }
-        scene.idle(5);
-        scene.overlay().showText(80)
-                .attachKeyFrame()
-                .text("A crystal is claimed by the first Resonator that resonates it")
+                .text("The Resonator interacts with nearby crystals")
                 .placeNearTarget()
                 .pointAt(util.vector().blockSurface(resonatorA, Direction.EAST));
-        scene.idle(90);
+        scene.idle(60);
 
-        // A second Resonator reaches the same crystals.
-        BlockPos resonatorB = pos(util, MULTI_RESONATOR_B);
+        // The crystal resonates: a spark on it, and its resource surfaces at the Resonator.
+        ParticleEmitter spark = scene.effects()
+                .simpleParticleEmitter(ParticleTypes.ENCHANT, util.vector().of(0, 0.1, 0));
+        scene.effects().emitParticles(util.vector().topOf(crystal), spark, 4, 30);
+        scene.overlay().showControls(util.vector().topOf(resonatorA), Pointing.DOWN, 40)
+                .withItem(new ItemStack(Items.RAW_COPPER));
+        scene.idle(50);
+
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("A single crystal can only correctly resonate with one Resonator")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(crystal));
+        scene.idle(80);
+
+        // A second Resonator causes dissonance -> the shared crystal breaks.
+        BlockPos resonatorB = pos(util, BASICS_RESONATOR_B);
         scene.world().showSection(util.select().position(resonatorB), Direction.DOWN);
         scene.idle(10);
         scene.overlay().showText(80)
                 .attachKeyFrame()
-                .text("A second Resonator must not share an already-claimed crystal")
+                .text("Adding a second Resonator nearby creates dissonance")
                 .colored(PonderPalette.RED)
                 .placeNearTarget()
-                .pointAt(util.vector().blockSurface(resonatorB, Direction.EAST));
+                .pointAt(util.vector().blockSurface(resonatorB, Direction.WEST));
+        scene.idle(50);
+        scene.overlay().showOutline(PonderPalette.RED, "dissonant_crystal", util.select().position(crystal), 40);
+        scene.idle(45);
+        scene.world().destroyBlock(crystal);
+        scene.idle(20);
+        scene.world().hideSection(util.select().position(resonatorB), Direction.UP);
+        scene.idle(20);
+
+        // Multiple crystals for one Resonator.
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("Multiple crystals can be used within the same Resonator")
+                .pointAt(util.vector().topOf(util.grid().at(7, 1, 4)));
+        scene.world().showSection(util.select().fromTo(6, 1, 4, 8, 1, 4), Direction.DOWN);
+        scene.idle(80);
+
+        // The Tuning Fork reveals the Resonator's range (5 out/up, 2 down from (5,1,7)).
+        Selection range = util.select().fromTo(0, -1, 2, 10, 6, 12);
+        scene.overlay().showOutline(PonderPalette.BLUE, "resonator_range", range, 90);
+        scene.overlay().showControls(util.vector().topOf(resonatorA), Pointing.DOWN, 60)
+                .rightClick().withItem(new ItemStack(ModItems.TUNING_FORK.get()));
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("A Tuning Fork can be used to show the Resonator's range")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(resonatorA, Direction.EAST));
         scene.idle(90);
 
-        // The contested crystal breaks.
-        BlockPos contested = pos(util, MULTI_CONTESTED);
-        Selection contestedSel = util.select().position(contested);
-        scene.overlay().showOutline(PonderPalette.RED, "contested", contestedSel, 40);
-        scene.idle(45);
-        scene.world().destroyBlock(contested);
+        scene.markAsFinished();
+    }
+
+    /** Scene 2: interference — rain and nearby mobs reduce the Resonator's success. */
+    public static void resonatorInterference(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("resonator_interference", "Interference");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
         scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+
+        BlockPos resonatorA = pos(util, BASICS_RESONATOR_A);
+        BlockPos crystal = pos(util, BASICS_CRYSTAL);
+        scene.world().showSection(util.select().position(resonatorA), Direction.DOWN);
+        scene.world().showSection(util.select().position(crystal), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("A Resonator is vulnerable to interference")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(resonatorA, Direction.EAST));
+        scene.idle(80);
+
+        // Fake rain: splash water from above the Resonator so it rains onto it.
+        ParticleEmitter rain = scene.effects()
+                .simpleParticleEmitter(ParticleTypes.SPLASH, util.vector().of(0, -0.25, 0));
+        scene.effects().emitParticles(util.vector().of(5.5, 2.7, 7.5), rain, 6, 80);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("For example, rain near its operating area will reduce the chance of success")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(resonatorA));
+        scene.idle(90);
+
+        // A zombie wanders in — a noisy neighbor.
+        var zombie = scene.world().createEntity(level -> {
+            Zombie z = new Zombie(EntityType.ZOMBIE, level);
+            z.setPos(8.5, 1.0, 8.5);
+            z.setYBodyRot(210.0f);
+            z.setYHeadRot(210.0f);
+            return z;
+        });
+        scene.idle(10);
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("Noisy neighbors can also interfere")
+                .pointAt(util.vector().of(8.5, 1.9, 8.5));
+        scene.idle(80);
+
+        // Deal with the neighbor.
+        scene.overlay().showControls(util.vector().of(8.5, 2.3, 8.5), Pointing.DOWN, 40)
+                .withItem(new ItemStack(Items.DIAMOND_SWORD));
+        scene.idle(45);
+        scene.world().modifyEntity(zombie, net.minecraft.world.entity.Entity::discard);
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("It's best to keep your Resonator free from distractions")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(resonatorA, Direction.EAST));
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    /** Scene 3: introduces Modulators (leads into the per-modulator scenes that follow). */
+    public static void resonatorModulators(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("resonator_modulators", "Modulators");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+
+        BlockPos resonator = pos(util, MOD_RESONATOR);
+        BlockPos modulator = pos(util, MOD_MODULATOR);
+        Selection crystals = util.select().fromTo(6, 1, 4, 8, 1, 6)
+                .substract(util.select().position(modulator));
+        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
+        scene.world().showSection(crystals, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("Modulators are special blocks that modify how the Resonator interacts with nearby crystals")
+                .pointAt(util.vector().topOf(util.grid().at(7, 1, 4)));
+        scene.idle(90);
+
+        scene.world().showSection(util.select().position(modulator), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("They can be placed as part of your crystal arrangement")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(modulator));
+        scene.idle(80);
+
+        // Tuning Fork shows the Modulator's area (silk touch: flat 3x3x1 around (7,1,5)).
+        scene.overlay().showOutline(PonderPalette.BLUE, "modulator_area",
+                util.select().fromTo(6, 1, 4, 8, 1, 6), 100);
+        scene.overlay().showControls(util.vector().topOf(modulator), Pointing.DOWN, 60)
+                .rightClick().withItem(new ItemStack(ModItems.TUNING_FORK.get()));
         scene.overlay().showText(90)
                 .attachKeyFrame()
-                .text("So a crystal caught between two Resonators simply breaks and drops")
+                .text("Some Modulators have an area of effect, and others affect the entire system")
                 .placeNearTarget()
-                .pointAt(util.vector().topOf(contested));
+                .pointAt(util.vector().topOf(modulator));
         scene.idle(100);
 
         scene.markAsFinished();
@@ -190,5 +293,134 @@ public final class BrgPonderScenes {
         scene.idle(100);
 
         scene.markAsFinished();
+    }
+
+    // --- Crystal creation tutorial (shared by the crystal item, the Former and the Infuser) ---
+    // Structure: crystal/former_infuser.nbt — Infuser (5,1,7), a blank crystal (7,1,7), Former (9,1,7).
+
+    /** Tutorial 1: forming blank crystals. */
+    public static void crystalBlank(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("crystal_blank", "Blank Crystals");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(1), Direction.DOWN);
+        scene.idle(15);
+
+        BlockPos former = util.grid().at(9, 1, 7);
+        scene.overlay().showControls(util.vector().topOf(former), Pointing.DOWN, 60).rightClick();
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("Blank Crystals can be created using the Crystal Former")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(former, Direction.WEST));
+        scene.idle(80);
+
+        // Data-driven list of every tier: blank crystals spread along Z (a receding line on the right),
+        // each with its own "<Tier> (X% Chance)" label beside it.
+        List<Holder.Reference<CrystalTier>> tiers = tiers();
+        scene.overlay().showText(60)
+                .attachKeyFrame()
+                .text("There are %s different types of Blank Crystal you can form", tiers.size())
+                .independent(30);
+        scene.idle(50);
+        for (int i = 0; i < tiers.size(); i++) {
+            Holder.Reference<CrystalTier> tier = tiers.get(i);
+            double z = 8.0 + (i - (tiers.size() - 1) / 2.0) * 1.8; // spread along Z
+            var at = util.vector().of(11.5, 1.4, z);
+            scene.world().createItemEntity(at, util.vector().of(0, 0, 0), CrystalItem.createBlank(tier));
+            int percent = Math.round(tier.value().rollChance() * 100);
+            scene.overlay().showText(90)
+                    .sharedText("tier_label", CrystalItem.tierName(tier).getString(), percent)
+                    .placeNearTarget()
+                    .pointAt(at);
+            scene.idle(10);
+        }
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("The blank crystal determines how likely the crystal is to resonate")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(7, 1, 7)));
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    /** Tutorial 2: infusing a blank crystal with a material. */
+    public static void crystalInfusing(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("crystal_infusing", "Infusing Crystals");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(1), Direction.DOWN);
+        scene.idle(15);
+
+        BlockPos infuser = util.grid().at(5, 1, 7);
+        List<Holder.Reference<CrystalTier>> tiers = tiers();
+        scene.overlay().showControls(util.vector().topOf(infuser), Pointing.DOWN, 60).rightClick();
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("A Blank crystal doesn't do anything on its own, it needs to be infused")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(infuser, Direction.EAST));
+        scene.idle(90);
+
+        // The inputs: copper ingots and a blank crystal go into the Infuser.
+        scene.overlay().showControls(util.vector().of(4.7, 2.2, 7.5), Pointing.DOWN, 70)
+                .withItem(new ItemStack(Items.COPPER_INGOT));
+        if (!tiers.isEmpty()) {
+            scene.overlay().showControls(util.vector().of(5.3, 2.2, 7.5), Pointing.DOWN, 70)
+                    .withItem(CrystalItem.createBlank(tiers.get(0)));
+        }
+        scene.idle(80);
+
+        // "Many materials" — show a spread of infused crystals (base tier, common ores).
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("Many materials can be infused into crystals")
+                .pointAt(util.vector().of(7.5, 1.6, 9.5));
+        if (!tiers.isEmpty()) {
+            String[] materials = {"iron", "copper", "gold", "diamond"};
+            for (int i = 0; i < materials.length; i++) {
+                double x = 7.5 + (i - (materials.length - 1) / 2.0) * 1.3;
+                CrystalResource resource = new OreTagResource(oresTag(materials[i]));
+                scene.world().createItemEntity(util.vector().of(x, 1.4, 9.5), util.vector().of(0, 0, 0),
+                        CrystalItem.create(tiers.get(0), resource));
+            }
+        }
+        scene.idle(80);
+
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("You cannot infuse a crystal with multiple materials")
+                .colored(PonderPalette.RED)
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(infuser));
+        scene.idle(100);
+
+        scene.markAsFinished();
+    }
+
+    /** Every crystal tier, sorted by level, from the client's registry (empty if unavailable). */
+    private static List<Holder.Reference<CrystalTier>> tiers() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return List.of();
+        }
+        return mc.level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY).holders()
+                .sorted(Comparator.comparingInt(h -> h.value().level()))
+                .toList();
+    }
+
+    private static TagKey<net.minecraft.world.level.block.Block> oresTag(String material) {
+        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", "ores/" + material));
     }
 }

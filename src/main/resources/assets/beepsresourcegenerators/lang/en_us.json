@@ -25,18 +25,38 @@
     "block.beepsresourcegenerators.placed_crystal": "Crystal",
     "block.beepsresourcegenerators.silk_touch_modulator": "Modulator: Silk Touch",
 
-    "beepsresourcegenerators.ponder.resonator_base.header": "Generating resources with the Resonator",
-    "beepsresourcegenerators.ponder.resonator_base.text_1": "The Resonator generates resources all on its own",
-    "beepsresourcegenerators.ponder.resonator_base.text_2": "Surround it with crystals — each one adds its resource to the pool",
-    "beepsresourcegenerators.ponder.resonator_base.text_3": "Every so often it rolls a crystal and outputs that resource",
+    "beepsresourcegenerators.ponder.resonator_base.header": "The Resonator",
+    "beepsresourcegenerators.ponder.resonator_base.text_1": "The Resonator interacts with nearby crystals",
+    "beepsresourcegenerators.ponder.resonator_base.text_2": "A single crystal can only correctly resonate with one Resonator",
+    "beepsresourcegenerators.ponder.resonator_base.text_3": "Adding a second Resonator nearby creates dissonance",
+    "beepsresourcegenerators.ponder.resonator_base.text_4": "Multiple crystals can be used within the same Resonator",
+    "beepsresourcegenerators.ponder.resonator_base.text_5": "A Tuning Fork can be used to show the Resonator's range",
 
-    "beepsresourcegenerators.ponder.resonator_multiple.header": "One crystal, one Resonator",
-    "beepsresourcegenerators.ponder.resonator_multiple.text_1": "A crystal is claimed by the first Resonator that resonates it",
-    "beepsresourcegenerators.ponder.resonator_multiple.text_2": "A second Resonator must not share an already-claimed crystal",
-    "beepsresourcegenerators.ponder.resonator_multiple.text_3": "So a crystal caught between two Resonators simply breaks and drops",
+    "beepsresourcegenerators.ponder.resonator_interference.header": "Interference",
+    "beepsresourcegenerators.ponder.resonator_interference.text_1": "A Resonator is vulnerable to interference",
+    "beepsresourcegenerators.ponder.resonator_interference.text_2": "For example, rain near its operating area will reduce the chance of success",
+    "beepsresourcegenerators.ponder.resonator_interference.text_3": "Noisy neighbors can also interfere",
+    "beepsresourcegenerators.ponder.resonator_interference.text_4": "It's best to keep your Resonator free from distractions",
+
+    "beepsresourcegenerators.ponder.resonator_modulators.header": "Modulators",
+    "beepsresourcegenerators.ponder.resonator_modulators.text_1": "Modulators are special blocks that modify how the Resonator interacts with nearby crystals",
+    "beepsresourcegenerators.ponder.resonator_modulators.text_2": "They can be placed as part of your crystal arrangement",
+    "beepsresourcegenerators.ponder.resonator_modulators.text_3": "Some Modulators have an area of effect, and others affect the entire system",
 
     "beepsresourcegenerators.ponder.modulator_silk_touch.header": "Modulator: Silk Touch",
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "Crystals around a Resonator yield raw ore",
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "A Modulator changes how nearby crystals behave",
-    "beepsresourcegenerators.ponder.modulator_silk_touch.text_3": "Silk Touch: crystals in its area yield the ore block itself"
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_3": "Silk Touch: crystals in its area yield the ore block itself",
+
+    "beepsresourcegenerators.ponder.shared.tier_label": "%s (%s%% Chance)",
+
+    "beepsresourcegenerators.ponder.crystal_blank.header": "Blank Crystals",
+    "beepsresourcegenerators.ponder.crystal_blank.text_1": "Blank Crystals can be created using the Crystal Former",
+    "beepsresourcegenerators.ponder.crystal_blank.text_2": "There are %s different types of Blank Crystal you can form",
+    "beepsresourcegenerators.ponder.crystal_blank.text_3": "The blank crystal determines how likely the crystal is to resonate",
+
+    "beepsresourcegenerators.ponder.crystal_infusing.header": "Infusing Crystals",
+    "beepsresourcegenerators.ponder.crystal_infusing.text_1": "A Blank crystal doesn't do anything on its own, it needs to be infused",
+    "beepsresourcegenerators.ponder.crystal_infusing.text_2": "Many materials can be infused into crystals",
+    "beepsresourcegenerators.ponder.crystal_infusing.text_3": "You cannot infuse a crystal with multiple materials"
 }
