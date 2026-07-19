@@ -4,7 +4,9 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.ResonatorBlock;
 import com.beepsterr.resourcegenerators.block.CrystalFormerBlock;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlock;
+import com.beepsterr.resourcegenerators.block.ModulatorBlock;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlock;
+import com.beepsterr.resourcegenerators.crystal.Modulation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -29,6 +31,12 @@ public final class ModBlocks {
     public static final DeferredBlock<ResonatorBlock> RESONATOR =
             REGISTER.registerBlock("resonator", ResonatorBlock::new,
                     BlockBehaviour.Properties.of().strength(4.0f));
+
+    /** Silk Touch modulator: projects Silk Touch over a flat 3x3x1 area (covered crystals yield ore blocks). */
+    public static final DeferredBlock<ModulatorBlock> SILK_TOUCH_MODULATOR =
+            REGISTER.registerBlock("silk_touch_modulator",
+                    props -> new ModulatorBlock(Modulation.SILK_TOUCH, 1, 0, props),
+                    BlockBehaviour.Properties.of().strength(3.5f));
 
     /** A crystal placed in the world (the crystal item places this). Non-solid, walk-through. */
     public static final DeferredBlock<PlacedCrystalBlock> PLACED_CRYSTAL =

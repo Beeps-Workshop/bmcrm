@@ -2,12 +2,14 @@ package com.beepsterr.resourcegenerators.block;
 
 import com.beepsterr.resourcegenerators.Config;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
+import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +25,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -75,7 +78,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     };
 
     private List<BlockPos> cachedPositions = List.of();
+    private List<ModulatorEntry> cachedModulators = List.of();
     private int tickCounter = 0;
+
+    /** A modulator block found in range: its position, kind, and the box (h/v radius) it projects. */
+    private record ModulatorEntry(BlockPos pos, Modulation modulation, int horizontalRadius, int verticalRadius) {}
     private int workProgress = 0;
     /** Last global crystal revision we scanned at (transient — forces a scan on first tick after load). */
     private long lastRevision = -1;
@@ -150,22 +157,30 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
      *  "resonated twice → break" decision are made later, at roll time, in {@link #doWork}. */
     private void rescan(Level level, BlockPos center) {
         List<BlockPos> positions = new ArrayList<>();
+        List<ModulatorEntry> modulators = new ArrayList<>();
         for (BlockPos p : BlockPos.betweenClosed(
                 center.offset(-RADIUS, -RADIUS_DOWN, -RADIUS), center.offset(RADIUS, RADIUS, RADIUS))) {
-            if (positions.size() >= MAX_CRYSTALS) {
-                break;
-            }
             if (p.equals(center) || !level.isLoaded(p)) {
                 continue;
             }
             if (level.getBlockEntity(p) instanceof PlacedCrystalBlockEntity crystal) {
+                if (positions.size() >= MAX_CRYSTALS) {
+                    continue;
+                }
                 CrystalData data = crystal.getCrystalData();
                 if (data != null && data.resource().isPresent()) {
                     positions.add(p.immutable());
                 }
+            } else if (level.getBlockEntity(p) instanceof ModulatorBlockEntity modulator) {
+                Modulation type = modulator.getModulation();
+                if (type != null) {
+                    modulators.add(new ModulatorEntry(p.immutable(), type,
+                            modulator.getHorizontalRadius(), modulator.getVerticalRadius()));
+                }
             }
         }
         this.cachedPositions = positions;
+        this.cachedModulators = modulators;
     }
 
     /**
@@ -181,7 +196,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         MinecraftServer server = level.getServer();
         HolderLookup.Provider registries = level.registryAccess();
         RandomSource random = level.getRandom();
-        ItemStack tool = new ItemStack(Items.NETHERITE_PICKAXE); // proper tier, no silk touch -> raw drops
+        ItemStack plainTool = new ItemStack(Items.NETHERITE_PICKAXE); // proper tier, no silk -> raw drops
+        ItemStack silkTool = null; // built lazily only if a Silk Touch modulator is actually in range
 
         // Rain penalty: a crystal exposed to the sky in the rain — or any crystal when the resonator
         // itself is rained on — rolls at reduced efficiency. Skipped entirely in clear weather.
@@ -222,6 +238,16 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 continue;
             }
             Block block = picked.get().value();
+
+            // A crystal covered by a Silk Touch modulator is rolled with a silk tool -> ore block form.
+            ItemStack tool = plainTool;
+            if (isCovered(p, Modulation.SILK_TOUCH)) {
+                if (silkTool == null) {
+                    silkTool = buildSilkTool(registries);
+                }
+                tool = silkTool;
+            }
+
             LootTable table = server.reloadableRegistries().getLootTable(block.getLootTable());
             LootParams params = new LootParams.Builder(level)
                     .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(center))
@@ -246,6 +272,30 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             spawnFlingParticles(level, p, center, drops.get(0));
         }
         setChanged();
+    }
+
+    /** Whether a modulator of the given kind projects over this crystal (h/v box, no stacking). */
+    private boolean isCovered(BlockPos crystal, Modulation type) {
+        for (ModulatorEntry m : cachedModulators) {
+            if (m.modulation() != type) {
+                continue;
+            }
+            BlockPos mp = m.pos();
+            if (Math.abs(crystal.getX() - mp.getX()) <= m.horizontalRadius()
+                    && Math.abs(crystal.getZ() - mp.getZ()) <= m.horizontalRadius()
+                    && Math.abs(crystal.getY() - mp.getY()) <= m.verticalRadius()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** A netherite pickaxe enchanted with Silk Touch, for rolling covered crystals into ore blocks. */
+    private static ItemStack buildSilkTool(HolderLookup.Provider registries) {
+        ItemStack pick = new ItemStack(Items.NETHERITE_PICKAXE);
+        registries.lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.SILK_TOUCH)
+                .ifPresent(holder -> pick.enchant(holder, 1));
+        return pick;
     }
 
     /** A small colored dust burst at a crystal that just generated. */

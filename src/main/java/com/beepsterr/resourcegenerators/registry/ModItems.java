@@ -39,6 +39,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> RESONATOR =
             REGISTER.registerSimpleBlockItem("resonator", ModBlocks.RESONATOR);
 
+    /** BlockItem for the Silk Touch Modulator. */
+    public static final DeferredItem<BlockItem> SILK_TOUCH_MODULATOR =
+            REGISTER.registerSimpleBlockItem("silk_touch_modulator", ModBlocks.SILK_TOUCH_MODULATOR);
+
     /** Tuning Fork: a diagnostic wrench that toggles area overlays (see {@link TuningForkItem}). */
     public static final DeferredItem<Item> TUNING_FORK =
             REGISTER.registerItem("tuning_fork", TuningForkItem::new, new Item.Properties().stacksTo(1));
