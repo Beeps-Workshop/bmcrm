@@ -49,7 +49,10 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public static final int OUTPUT_SLOTS = 15;
 
-    private static final int RADIUS = 8;
+    /** Horizontal + upward reach from the resonator. */
+    private static final int RADIUS = 5;
+    /** Downward reach is shallower — the resonator shouldn't dig far below itself. */
+    private static final int RADIUS_DOWN = 2;
     private static final int RESCAN_INTERVAL = 200;
     /** Ticks between work cycles. Kept slow — each crystal only *maybe* generates (tier roll chance). */
     private static final int WORK_INTERVAL = 100;
@@ -138,7 +141,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
     private void rescan(Level level, BlockPos center) {
         List<BlockPos> positions = new ArrayList<>();
         for (BlockPos p : BlockPos.betweenClosed(
-                center.offset(-RADIUS, -RADIUS, -RADIUS), center.offset(RADIUS, RADIUS, RADIUS))) {
+                center.offset(-RADIUS, -RADIUS_DOWN, -RADIUS), center.offset(RADIUS, RADIUS, RADIUS))) {
             if (positions.size() >= MAX_CRYSTALS) {
                 break;
             }
