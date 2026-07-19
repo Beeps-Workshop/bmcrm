@@ -23,6 +23,7 @@
     "block.beepsresourcegenerators.crystal_infuser": "Crystal Infuser",
     "block.beepsresourcegenerators.resonator": "Resonator",
     "block.beepsresourcegenerators.placed_crystal": "Crystal",
+    "block.beepsresourcegenerators.silk_touch_modulator": "Modulator: Silk Touch",
 
     "beepsresourcegenerators.ponder.resonator_base.header": "Generating resources with the Resonator",
     "beepsresourcegenerators.ponder.resonator_base.text_1": "The Resonator generates resources all on its own",

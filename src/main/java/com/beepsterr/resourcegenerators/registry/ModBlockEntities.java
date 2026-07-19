@@ -4,6 +4,7 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.ResonatorBlockEntity;
 import com.beepsterr.resourcegenerators.block.CrystalFormerBlockEntity;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlockEntity;
+import com.beepsterr.resourcegenerators.block.ModulatorBlockEntity;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -37,5 +38,11 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<ResonatorBlockEntity>> RESONATOR =
             REGISTER.register("resonator", () -> BlockEntityType.Builder
                     .of(ResonatorBlockEntity::new, ModBlocks.RESONATOR.get())
+                    .build(null));
+
+    /** One BE type shared by all Modulator blocks (add more blocks to the .of(...) as they're added). */
+    public static final Supplier<BlockEntityType<ModulatorBlockEntity>> MODULATOR =
+            REGISTER.register("modulator", () -> BlockEntityType.Builder
+                    .of(ModulatorBlockEntity::new, ModBlocks.SILK_TOUCH_MODULATOR.get())
                     .build(null));
 }

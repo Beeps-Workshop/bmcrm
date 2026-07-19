@@ -3,6 +3,7 @@
     "values": [
         "beepsresourcegenerators:crystal_former",
         "beepsresourcegenerators:crystal_infuser",
-        "beepsresourcegenerators:resonator"
+        "beepsresourcegenerators:resonator",
+        "beepsresourcegenerators:silk_touch_modulator"
     ]
 }
