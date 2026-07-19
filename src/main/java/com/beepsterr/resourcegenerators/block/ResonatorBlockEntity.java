@@ -23,6 +23,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -205,6 +207,10 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         boolean weatherPenalty = rainEfficiency < 1.0 && level.isRaining();
         boolean resonatorRained = weatherPenalty && level.isRainingAt(center);
 
+        // Mob interference: a hostile mob near the resonator ("noisy neighbors") reduces efficiency too.
+        double mobEfficiency = Config.MOB_EFFICIENCY.get();
+        boolean mobPenalty = mobEfficiency < 1.0 && hasNearbyHostile(level, center);
+
         for (BlockPos p : cachedPositions) {
             if (!(level.getBlockEntity(p) instanceof PlacedCrystalBlockEntity crystal)) {
                 continue;
@@ -228,6 +234,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             float rollChance = data.tier().value().rollChance();
             if (weatherPenalty && (resonatorRained || level.isRainingAt(p))) {
                 rollChance *= (float) rainEfficiency;
+            }
+            if (mobPenalty) {
+                rollChance *= (float) mobEfficiency;
             }
             if (random.nextFloat() >= rollChance) {
                 continue; // this crystal didn't generate this cycle
@@ -288,6 +297,12 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             }
         }
         return false;
+    }
+
+    /** Whether a live hostile mob is within the disruption radius of the resonator. */
+    private static boolean hasNearbyHostile(ServerLevel level, BlockPos center) {
+        AABB area = new AABB(center).inflate(Config.MOB_DISRUPTION_RADIUS.get());
+        return !level.getEntitiesOfClass(Mob.class, area, m -> m instanceof Enemy && m.isAlive()).isEmpty();
     }
 
     /** A netherite pickaxe enchanted with Silk Touch, for rolling covered crystals into ore blocks. */
