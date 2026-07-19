@@ -38,6 +38,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RESONATOR.get());
                 output.accept(ModItems.CRYSTAL_FORMER.get());
                 output.accept(ModItems.CRYSTAL_INFUSER.get());
+                output.accept(ModItems.TUNING_FORK.get());
 
                 var tiersOpt = params.holders().lookup(ModRegistries.CRYSTAL_TIER_KEY);
                 var blocksOpt = params.holders().lookup(Registries.BLOCK);

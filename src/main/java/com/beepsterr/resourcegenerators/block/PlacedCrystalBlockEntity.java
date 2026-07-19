@@ -12,9 +12,12 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  * Block entity for a placed crystal. Stores the crystal's {@link CrystalData} (tier + resource) so
@@ -52,8 +55,16 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
     }
 
     public void setOwner(@Nullable BlockPos owner) {
+        if (Objects.equals(this.owner, owner)) {
+            return;
+        }
         this.owner = owner;
         setChanged();
+        // setChanged() only marks for saving; push a block-entity update so clients (e.g. the Tuning
+        // Fork's crystal->resonator ping) see the new owner without a world reload.
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override

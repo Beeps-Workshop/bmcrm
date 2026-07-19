@@ -31,6 +31,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.joml.Vector3f;
@@ -45,7 +46,7 @@ import java.util.Optional;
  * (a block's break loot table, using a synthetic netherite pickaxe so ores yield their raw drops)
  * into an output buffer. Crystals are cached between scans; tier scales rolls per cycle.
  */
-public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
+public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, AreaPreview {
 
     public static final int OUTPUT_SLOTS = 15;
 
@@ -113,6 +114,15 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getCrystalCount() {
         return cachedPositions.size();
+    }
+
+    /** The scan volume, as a world-space box — same reach the rescan uses (5 out/up, 2 down). */
+    @Override
+    public AABB getPreviewArea() {
+        BlockPos c = worldPosition;
+        return new AABB(
+                c.getX() - RADIUS, c.getY() - RADIUS_DOWN, c.getZ() - RADIUS,
+                c.getX() + RADIUS + 1, c.getY() + RADIUS + 1, c.getZ() + RADIUS + 1);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ResonatorBlockEntity be) {
