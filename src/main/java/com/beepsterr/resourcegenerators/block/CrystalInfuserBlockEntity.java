@@ -4,10 +4,12 @@ import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalInfusion;
 import com.beepsterr.resourcegenerators.crystal.CrystalInfusionMap;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
+import com.beepsterr.resourcegenerators.inventory.SidedItemHandler;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
 import com.beepsterr.resourcegenerators.registry.ModItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,6 +69,31 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         return inventory;
     }
 
+    // Cached per-face views: both inputs in from the top, finished crystals out the bottom.
+    private SidedItemHandler topInsert;
+    private SidedItemHandler bottomOutput;
+
+    /** The automation view for a given face; null side (internal access) sees the full inventory. */
+    @Nullable
+    public IItemHandler getInventoryForSide(@Nullable Direction side) {
+        if (side == null) {
+            return inventory;
+        }
+        return switch (side) {
+            // Top accepts both material and blank crystals; isItemValid routes each to its slot.
+            case UP -> topInsert != null ? topInsert
+                    : (topInsert = new SidedItemHandler(inventory,
+                    new boolean[]{true, true}, new boolean[]{false, false}, null));
+            // Bottom only yields the crystal once it is fully infused — never a half-done one.
+            case DOWN -> bottomOutput != null ? bottomOutput
+                    : (bottomOutput = new SidedItemHandler(inventory,
+                    new boolean[]{false, false}, new boolean[]{false, true},
+                    (slot, current) -> isInfusedCrystal(current)));
+            // Sides expose nothing.
+            default -> null;
+        };
+    }
+
     static boolean isCrystal(ItemStack stack) {
         return stack.is(ModItems.CRYSTAL.get());
     }
@@ -76,6 +104,15 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         }
         CrystalData data = stack.get(ModDataComponents.CRYSTAL_DATA.get());
         return data != null && data.resource().isEmpty();
+    }
+
+    /** A crystal that has finished infusing (carries a resource). */
+    static boolean isInfusedCrystal(ItemStack stack) {
+        if (!isCrystal(stack)) {
+            return false;
+        }
+        CrystalData data = stack.get(ModDataComponents.CRYSTAL_DATA.get());
+        return data != null && data.resource().isPresent();
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalInfuserBlockEntity be) {

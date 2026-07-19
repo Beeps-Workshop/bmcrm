@@ -1,10 +1,12 @@
 package com.beepsterr.resourcegenerators.block;
 
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.inventory.SidedItemHandler;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModRegistries;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -19,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,6 +82,30 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
 
     public ItemStackHandler getInventory() {
         return inventory;
+    }
+
+    // Cached per-face views: base in from the top, catalyst in from the sides, output out the bottom.
+    private SidedItemHandler topInsert;    // base only
+    private SidedItemHandler sideInsert;   // catalyst only
+    private SidedItemHandler bottomOutput; // output only
+
+    /** The automation view for a given face; null side (internal access) sees the full inventory. */
+    @Nullable
+    public IItemHandler getInventoryForSide(@Nullable Direction side) {
+        if (side == null) {
+            return inventory;
+        }
+        return switch (side) {
+            case UP -> topInsert != null ? topInsert
+                    : (topInsert = new SidedItemHandler(inventory,
+                    new boolean[]{true, false, false}, new boolean[]{false, false, false}, null));
+            case DOWN -> bottomOutput != null ? bottomOutput
+                    : (bottomOutput = new SidedItemHandler(inventory,
+                    new boolean[]{false, false, false}, new boolean[]{false, false, true}, null));
+            default -> sideInsert != null ? sideInsert
+                    : (sideInsert = new SidedItemHandler(inventory,
+                    new boolean[]{false, true, false}, new boolean[]{false, false, false}, null));
+        };
     }
 
     public ContainerData getContainerData() {

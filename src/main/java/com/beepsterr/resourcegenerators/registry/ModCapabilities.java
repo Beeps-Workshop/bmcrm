@@ -13,11 +13,11 @@ public final class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.CRYSTAL_FORMER.get(),
-                (be, side) -> be.getInventory());
+                (be, side) -> be.getInventoryForSide(side));
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.CRYSTAL_INFUSER.get(),
-                (be, side) -> be.getInventory());
+                (be, side) -> be.getInventoryForSide(side));
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.RESONATOR.get(),
