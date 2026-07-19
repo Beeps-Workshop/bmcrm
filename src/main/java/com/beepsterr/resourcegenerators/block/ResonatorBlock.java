@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -36,6 +37,20 @@ public class ResonatorBlock extends Block implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ResonatorBlockEntity(pos, state);
+    }
+
+    // Comparator output = how full the resource buffer is (standard container fullness, 0-15).
+    @Override
+    protected boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof ResonatorBlockEntity resonator) {
+            return ItemHandlerHelper.calcRedstoneFromInventory(resonator.getOutput());
+        }
+        return 0;
     }
 
     @Nullable
