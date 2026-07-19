@@ -13,7 +13,9 @@ import com.beepsterr.resourcegenerators.registry.ModItems;
 import com.beepsterr.resourcegenerators.registry.ModMenus;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
@@ -58,5 +60,14 @@ public final class ResourceGeneratorsClient {
         event.register(ModMenus.CRYSTAL_FORMER.get(), CrystalFormerScreen::new);
         event.register(ModMenus.CRYSTAL_INFUSER.get(), CrystalInfuserScreen::new);
         event.register(ModMenus.RESONATOR.get(), ResonatorScreen::new);
+    }
+
+    @SubscribeEvent
+    static void onClientSetup(FMLClientSetupEvent event) {
+        // Ponder is a soft dependency: only register scenes when it's actually installed. The guard
+        // keeps PonderCompat (and every Ponder class it touches) from being loaded when it's absent.
+        if (ModList.get().isLoaded("ponder")) {
+            event.enqueueWork(com.beepsterr.resourcegenerators.compat.ponder.PonderCompat::register);
+        }
     }
 }

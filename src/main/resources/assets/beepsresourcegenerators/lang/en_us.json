@@ -15,5 +15,15 @@
 
     "block.beepsresourcegenerators.crystal_infuser": "Crystal Infuser",
     "block.beepsresourcegenerators.resonator": "Resonator",
-    "block.beepsresourcegenerators.placed_crystal": "Crystal"
+    "block.beepsresourcegenerators.placed_crystal": "Crystal",
+
+    "beepsresourcegenerators.ponder.resonator_base.header": "Generating resources with the Resonator",
+    "beepsresourcegenerators.ponder.resonator_base.text_1": "The Resonator generates resources all on its own",
+    "beepsresourcegenerators.ponder.resonator_base.text_2": "Surround it with crystals — each one adds its resource to the pool",
+    "beepsresourcegenerators.ponder.resonator_base.text_3": "Every so often it rolls a crystal and outputs that resource",
+
+    "beepsresourcegenerators.ponder.resonator_multiple.header": "One crystal, one Resonator",
+    "beepsresourcegenerators.ponder.resonator_multiple.text_1": "A crystal is claimed by the first Resonator that resonates it",
+    "beepsresourcegenerators.ponder.resonator_multiple.text_2": "A second Resonator must not share an already-claimed crystal",
+    "beepsresourcegenerators.ponder.resonator_multiple.text_3": "So a crystal caught between two Resonators simply breaks and drops"
 }
