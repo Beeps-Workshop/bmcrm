@@ -33,5 +33,10 @@
     "beepsresourcegenerators.ponder.resonator_multiple.header": "One crystal, one Resonator",
     "beepsresourcegenerators.ponder.resonator_multiple.text_1": "A crystal is claimed by the first Resonator that resonates it",
     "beepsresourcegenerators.ponder.resonator_multiple.text_2": "A second Resonator must not share an already-claimed crystal",
-    "beepsresourcegenerators.ponder.resonator_multiple.text_3": "So a crystal caught between two Resonators simply breaks and drops"
+    "beepsresourcegenerators.ponder.resonator_multiple.text_3": "So a crystal caught between two Resonators simply breaks and drops",
+
+    "beepsresourcegenerators.ponder.modulator_silk_touch.header": "Modulator: Silk Touch",
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "Crystals around a Resonator yield raw ore",
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "A Modulator changes how nearby crystals behave",
+    "beepsresourcegenerators.ponder.modulator_silk_touch.text_3": "Silk Touch: crystals in its area yield the ore block itself"
 }

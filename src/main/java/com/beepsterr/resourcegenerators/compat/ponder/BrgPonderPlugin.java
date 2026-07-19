@@ -26,5 +26,9 @@ public class BrgPonderPlugin implements PonderPlugin {
         ResourceLocation resonator = ModBlocks.RESONATOR.getId();
         helper.addStoryBoard(resonator, "resonator/base", BrgPonderScenes::resonatorBase);
         helper.addStoryBoard(resonator, "resonator/multiple", BrgPonderScenes::resonatorMultiple);
+
+        // Attached to the Modulator item so pressing ponder on it explains what it does.
+        helper.addStoryBoard(ModBlocks.SILK_TOUCH_MODULATOR.getId(), "modulator/silk_touch",
+                BrgPonderScenes::modulatorSilkTouch);
     }
 }
