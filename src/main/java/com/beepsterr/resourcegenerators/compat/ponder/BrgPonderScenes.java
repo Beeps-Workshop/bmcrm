@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.compat.ponder;
 
+import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.ParticleEmitter;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuilder;
@@ -8,6 +9,8 @@ import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * Ponder storyboards for the Resonator. The starting layouts are authored in-world and loaded from
@@ -129,6 +132,61 @@ public final class BrgPonderScenes {
                 .text("So a crystal caught between two Resonators simply breaks and drops")
                 .placeNearTarget()
                 .pointAt(util.vector().topOf(contested));
+        scene.idle(100);
+
+        scene.markAsFinished();
+    }
+
+    /** Scene 3: a Silk Touch Modulator makes covered crystals yield the ore block. */
+    public static void modulatorSilkTouch(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("modulator_silk_touch", "Modulator: Silk Touch");
+        scene.configureBasePlate(0, 0, 15);
+        scene.scaleSceneView(0.6f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(15);
+
+        // Resonator plus two crystal patches.
+        BlockPos resonator = util.grid().at(7, 1, 7);
+        scene.world().showSection(util.select().position(resonator), Direction.DOWN);
+        scene.idle(5);
+        Selection leftPatch = util.select().fromTo(3, 1, 6, 5, 1, 8);
+        Selection rightCrystals = util.select().fromTo(9, 1, 6, 11, 1, 8)
+                .substract(util.select().position(util.grid().at(10, 1, 7)));
+        scene.world().showSection(leftPatch, Direction.DOWN);
+        scene.world().showSection(rightCrystals, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("Crystals around a Resonator yield raw ore")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(4, 1, 7)));
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(4, 2, 7)), Pointing.DOWN, 80)
+                .withItem(new ItemStack(Items.RAW_COPPER));
+        scene.idle(90);
+
+        // The Modulator drops in at the centre of the right patch.
+        BlockPos modulator = util.grid().at(10, 1, 7);
+        scene.world().showSection(util.select().position(modulator), Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("A Modulator changes how nearby crystals behave")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(modulator));
+        scene.idle(90);
+
+        // Highlight its flat 3x3 footprint.
+        Selection area = util.select().fromTo(9, 1, 6, 11, 1, 8);
+        scene.overlay().showOutline(PonderPalette.BLUE, "silk_area", area, 100);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("Silk Touch: crystals in its area yield the ore block itself")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(10, 1, 8)));
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(10, 2, 7)), Pointing.DOWN, 90)
+                .withItem(new ItemStack(Items.COPPER_ORE));
         scene.idle(100);
 
         scene.markAsFinished();
