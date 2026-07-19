@@ -4,6 +4,7 @@
         "beepsresourcegenerators:crystal_former",
         "beepsresourcegenerators:crystal_infuser",
         "beepsresourcegenerators:resonator",
-        "beepsresourcegenerators:silk_touch_modulator"
+        "beepsresourcegenerators:silk_touch_modulator",
+        "beepsresourcegenerators:fortune_modulator"
     ]
 }

@@ -92,7 +92,10 @@ public final class TuningForkOverlay {
         for (BlockPos p : shown) {
             BlockEntity be = mc.level.getBlockEntity(p);
             if (be instanceof AreaPreview preview) {
-                drawBox(pose, lines, preview.getPreviewArea(), preview.getPreviewColor());
+                int color = preview.getPreviewColor();
+                for (AABB box : preview.getPreviewBoxes()) {
+                    drawBox(pose, lines, box, color);
+                }
             }
         }
         pose.popPose();

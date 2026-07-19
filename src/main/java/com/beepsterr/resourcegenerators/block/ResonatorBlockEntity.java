@@ -1,6 +1,7 @@
 package com.beepsterr.resourcegenerators.block;
 
 import com.beepsterr.resourcegenerators.Config;
+import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
@@ -43,7 +44,9 @@ import org.joml.Vector3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -83,8 +86,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     private List<ModulatorEntry> cachedModulators = List.of();
     private int tickCounter = 0;
 
-    /** A modulator block found in range: its position, kind, and the box (h/v radius) it projects. */
-    private record ModulatorEntry(BlockPos pos, Modulation modulation, int horizontalRadius, int verticalRadius) {}
+    /** A modulator block found in range: its position, kind, footprint shape, and h/v radius. */
+    private record ModulatorEntry(BlockPos pos, Modulation modulation, AreaShape shape,
+                                  int horizontalRadius, int verticalRadius) {}
     private int workProgress = 0;
     /** Last global crystal revision we scanned at (transient — forces a scan on first tick after load). */
     private long lastRevision = -1;
@@ -127,11 +131,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     /** The scan volume, as a world-space box — same reach the rescan uses (5 out/up, 2 down). */
     @Override
-    public AABB getPreviewArea() {
+    public List<AABB> getPreviewBoxes() {
         BlockPos c = worldPosition;
-        return new AABB(
+        return List.of(new AABB(
                 c.getX() - RADIUS, c.getY() - RADIUS_DOWN, c.getZ() - RADIUS,
-                c.getX() + RADIUS + 1, c.getY() + RADIUS + 1, c.getZ() + RADIUS + 1);
+                c.getX() + RADIUS + 1, c.getY() + RADIUS + 1, c.getZ() + RADIUS + 1));
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ResonatorBlockEntity be) {
@@ -175,8 +179,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 }
             } else if (level.getBlockEntity(p) instanceof ModulatorBlockEntity modulator) {
                 Modulation type = modulator.getModulation();
-                if (type != null) {
-                    modulators.add(new ModulatorEntry(p.immutable(), type,
+                AreaShape shape = modulator.getShape();
+                if (type != null && shape != null) {
+                    modulators.add(new ModulatorEntry(p.immutable(), type, shape,
                             modulator.getHorizontalRadius(), modulator.getVerticalRadius()));
                 }
             }
@@ -200,6 +205,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         RandomSource random = level.getRandom();
         ItemStack plainTool = new ItemStack(Items.NETHERITE_PICKAXE); // proper tier, no silk -> raw drops
         ItemStack silkTool = null; // built lazily only if a Silk Touch modulator is actually in range
+        Map<Integer, ItemStack> fortuneTools = new HashMap<>(); // one per fortune level actually needed
 
         // Rain penalty: a crystal exposed to the sky in the rain — or any crystal when the resonator
         // itself is rained on — rolls at reduced efficiency. Skipped entirely in clear weather.
@@ -248,13 +254,20 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             }
             Block block = picked.get().value();
 
-            // A crystal covered by a Silk Touch modulator is rolled with a silk tool -> ore block form.
+            // Silk Touch wins if present (-> ore block); otherwise Fortune stacks (level = overlaps).
             ItemStack tool = plainTool;
             if (isCovered(p, Modulation.SILK_TOUCH)) {
                 if (silkTool == null) {
                     silkTool = buildSilkTool(registries);
                 }
                 tool = silkTool;
+            } else {
+                int fortune = countCovering(p, Modulation.FORTUNE);
+                if (fortune > 0) {
+                    int cap = Config.MAX_FORTUNE_LEVEL.get();
+                    int fortuneLevel = cap > 0 ? Math.min(fortune, cap) : fortune;
+                    tool = fortuneTools.computeIfAbsent(fortuneLevel, lvl -> buildFortuneTool(registries, lvl));
+                }
             }
 
             LootTable table = server.reloadableRegistries().getLootTable(block.getLootTable());
@@ -283,20 +296,25 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         setChanged();
     }
 
-    /** Whether a modulator of the given kind projects over this crystal (h/v box, no stacking). */
-    private boolean isCovered(BlockPos crystal, Modulation type) {
+    /** How many modulators of the given kind cover this crystal (overlapping footprints stack). */
+    private int countCovering(BlockPos crystal, Modulation type) {
+        int count = 0;
         for (ModulatorEntry m : cachedModulators) {
             if (m.modulation() != type) {
                 continue;
             }
             BlockPos mp = m.pos();
-            if (Math.abs(crystal.getX() - mp.getX()) <= m.horizontalRadius()
-                    && Math.abs(crystal.getZ() - mp.getZ()) <= m.horizontalRadius()
-                    && Math.abs(crystal.getY() - mp.getY()) <= m.verticalRadius()) {
-                return true;
+            if (m.shape().covers(m.horizontalRadius(), m.verticalRadius(),
+                    crystal.getX() - mp.getX(), crystal.getY() - mp.getY(), crystal.getZ() - mp.getZ())) {
+                count++;
             }
         }
-        return false;
+        return count;
+    }
+
+    /** Whether at least one modulator of the given kind covers this crystal. */
+    private boolean isCovered(BlockPos crystal, Modulation type) {
+        return countCovering(crystal, type) > 0;
     }
 
     /** Whether a live hostile mob is within the disruption radius of the resonator. */
@@ -310,6 +328,14 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         ItemStack pick = new ItemStack(Items.NETHERITE_PICKAXE);
         registries.lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.SILK_TOUCH)
                 .ifPresent(holder -> pick.enchant(holder, 1));
+        return pick;
+    }
+
+    /** A netherite pickaxe enchanted with Fortune at the given level, for extra ore drops. */
+    private static ItemStack buildFortuneTool(HolderLookup.Provider registries, int level) {
+        ItemStack pick = new ItemStack(Items.NETHERITE_PICKAXE);
+        registries.lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.FORTUNE)
+                .ifPresent(holder -> pick.enchant(holder, level));
         return pick;
     }
 

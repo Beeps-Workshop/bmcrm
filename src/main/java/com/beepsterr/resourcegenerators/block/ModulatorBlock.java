@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.block;
 
+import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -21,24 +22,32 @@ public class ModulatorBlock extends Block implements EntityBlock {
 
     public static final MapCodec<ModulatorBlock> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             Modulation.CODEC.fieldOf("modulation").forGetter(ModulatorBlock::modulation),
+            AreaShape.CODEC.fieldOf("shape").forGetter(ModulatorBlock::shape),
             Codec.intRange(0, 16).fieldOf("horizontal_radius").forGetter(ModulatorBlock::horizontalRadius),
             Codec.intRange(0, 16).fieldOf("vertical_radius").forGetter(ModulatorBlock::verticalRadius),
             propertiesCodec()
     ).apply(inst, ModulatorBlock::new));
 
     private final Modulation modulation;
+    private final AreaShape shape;
     private final int horizontalRadius;
     private final int verticalRadius;
 
-    public ModulatorBlock(Modulation modulation, int horizontalRadius, int verticalRadius, Properties properties) {
+    public ModulatorBlock(Modulation modulation, AreaShape shape, int horizontalRadius, int verticalRadius,
+                          Properties properties) {
         super(properties);
         this.modulation = modulation;
+        this.shape = shape;
         this.horizontalRadius = horizontalRadius;
         this.verticalRadius = verticalRadius;
     }
 
     public Modulation modulation() {
         return modulation;
+    }
+
+    public AreaShape shape() {
+        return shape;
     }
 
     /** Reach on the X/Z axes (radius 1 -> 3 wide). */

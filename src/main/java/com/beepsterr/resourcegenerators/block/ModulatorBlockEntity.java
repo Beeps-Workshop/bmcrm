@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.block;
 
+import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -7,6 +8,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Block entity for a {@link ModulatorBlock}. Holds no dynamic state — the modulation and radii come
@@ -32,14 +35,18 @@ public class ModulatorBlockEntity extends BlockEntity implements AreaPreview {
         return getBlockState().getBlock() instanceof ModulatorBlock block ? block.verticalRadius() : 0;
     }
 
+    @Nullable
+    public AreaShape getShape() {
+        return getBlockState().getBlock() instanceof ModulatorBlock block ? block.shape() : null;
+    }
+
     @Override
-    public AABB getPreviewArea() {
-        int h = getHorizontalRadius();
-        int v = getVerticalRadius();
-        BlockPos p = worldPosition;
-        return new AABB(
-                p.getX() - h, p.getY() - v, p.getZ() - h,
-                p.getX() + h + 1, p.getY() + v + 1, p.getZ() + h + 1);
+    public List<AABB> getPreviewBoxes() {
+        AreaShape shape = getShape();
+        if (shape == null) {
+            return List.of();
+        }
+        return shape.previewBoxes(worldPosition, getHorizontalRadius(), getVerticalRadius());
     }
 
     @Override

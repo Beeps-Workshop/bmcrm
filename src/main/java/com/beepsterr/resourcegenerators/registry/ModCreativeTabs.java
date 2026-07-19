@@ -39,6 +39,7 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.CRYSTAL_FORMER.get());
                 output.accept(ModItems.CRYSTAL_INFUSER.get());
                 output.accept(ModItems.SILK_TOUCH_MODULATOR.get());
+                output.accept(ModItems.FORTUNE_MODULATOR.get());
                 output.accept(ModItems.TUNING_FORK.get());
 
                 var tiersOpt = params.holders().lookup(ModRegistries.CRYSTAL_TIER_KEY);

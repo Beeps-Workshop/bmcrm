@@ -6,6 +6,7 @@ import com.beepsterr.resourcegenerators.block.CrystalFormerBlock;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlock;
 import com.beepsterr.resourcegenerators.block.ModulatorBlock;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlock;
+import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -32,10 +33,16 @@ public final class ModBlocks {
             REGISTER.registerBlock("resonator", ResonatorBlock::new,
                     BlockBehaviour.Properties.of().strength(4.0f));
 
-    /** Silk Touch modulator: projects Silk Touch over a flat 3x3x1 area (covered crystals yield ore blocks). */
+    /** Silk Touch modulator: a flat 3x3x1 box (covered crystals yield ore blocks). Does not stack. */
     public static final DeferredBlock<ModulatorBlock> SILK_TOUCH_MODULATOR =
             REGISTER.registerBlock("silk_touch_modulator",
-                    props -> new ModulatorBlock(Modulation.SILK_TOUCH, 1, 0, props),
+                    props -> new ModulatorBlock(Modulation.SILK_TOUCH, AreaShape.BOX, 1, 0, props),
+                    BlockBehaviour.Properties.of().strength(3.5f));
+
+    /** Fortune modulator: a flat "+" (arm 2). Stacks; suppressed by Silk Touch on the same crystal. */
+    public static final DeferredBlock<ModulatorBlock> FORTUNE_MODULATOR =
+            REGISTER.registerBlock("fortune_modulator",
+                    props -> new ModulatorBlock(Modulation.FORTUNE, AreaShape.PLUS, 2, 0, props),
                     BlockBehaviour.Properties.of().strength(3.5f));
 
     /** A crystal placed in the world (the crystal item places this). Non-solid, walk-through. */
