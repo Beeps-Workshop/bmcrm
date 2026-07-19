@@ -48,6 +48,12 @@
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_1": "The Silk Touch Modulator allows you to obtain ore blocks instead of raw ore",
     "beepsresourcegenerators.ponder.modulator_silk_touch.text_2": "The Silk Touch Modulator affects all crystals directly surrounding it",
 
+    "beepsresourcegenerators.ponder.modulator_fortune.header": "Modulator: Fortune",
+    "beepsresourcegenerators.ponder.modulator_fortune.text_1": "Fortune Modulators apply the Fortune enchantment on the crystal whenever it generates resources",
+    "beepsresourcegenerators.ponder.modulator_fortune.text_2": "The Fortune Modulator operates on a 5x5 plus",
+    "beepsresourcegenerators.ponder.modulator_fortune.text_3": "Multiple Fortune Modulators can affect one crystal",
+    "beepsresourcegenerators.ponder.modulator_fortune.text_4": "A Silk Touch Modulator disables the effects of any Fortune Modulators",
+
     "beepsresourcegenerators.ponder.tag.creating_crystals": "Creating Crystals",
     "beepsresourcegenerators.ponder.tag.creating_crystals.description": "Forming blank crystals and infusing them with a resource",
     "beepsresourcegenerators.ponder.tag.using_crystals": "Using Crystals",
