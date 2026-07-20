@@ -1,8 +1,0 @@
-{
-    "variants": {
-        "facing=north": { "model": "beepsresourcegenerators:block/crystal_former" },
-        "facing=east":  { "model": "beepsresourcegenerators:block/crystal_former", "y": 90 },
-        "facing=south": { "model": "beepsresourcegenerators:block/crystal_former", "y": 180 },
-        "facing=west":  { "model": "beepsresourcegenerators:block/crystal_former", "y": 270 }
-    }
-}

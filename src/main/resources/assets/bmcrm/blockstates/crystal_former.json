@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "bmcrm:block/crystal_former" },
+        "facing=east":  { "model": "bmcrm:block/crystal_former", "y": 90 },
+        "facing=south": { "model": "bmcrm:block/crystal_former", "y": 180 },
+        "facing=west":  { "model": "bmcrm:block/crystal_former", "y": 270 }
+    }
+}

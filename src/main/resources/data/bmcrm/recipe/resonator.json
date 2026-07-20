@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        " L ",
+        "TNT",
+        "SSS"
+    ],
+    "key": {
+        "T": { "tag": "minecraft:wool" },
+        "L": { "item": "minecraft:light_weighted_pressure_plate" },
+        "N": { "item": "minecraft:note_block" },
+        "S": { "item": "minecraft:smooth_stone" }
+    },
+    "result": {
+        "count": 1,
+        "id": "bmcrm:resonator"
+    }
+}

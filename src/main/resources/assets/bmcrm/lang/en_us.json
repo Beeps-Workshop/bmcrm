@@ -1,0 +1,79 @@
+{
+    "itemGroup.bmcrm": "Beep's Mean Crystalline Resource Machine",
+
+    "block.bmcrm.crystal_former": "Crystal Former",
+
+    "item.bmcrm.crystal": "Crystal",
+
+    "item.bmcrm.tuning_fork": "Tuning Fork",
+    "item.bmcrm.tuning_fork.shown": "Showing range",
+    "item.bmcrm.tuning_fork.hidden": "Hiding range",
+    "item.bmcrm.tuning_fork.linked": "Pinging this crystal's resonator",
+    "item.bmcrm.tuning_fork.unlinked": "This crystal isn't linked to a resonator yet",
+
+    "item.bmcrm.crystal.named": "%1$s Infused %2$s Crystal",
+    "item.bmcrm.crystal.blank_named": "Blank %s Crystal",
+
+    "tooltip.bmcrm.tier_line": "%1$s Crystal (%2$s%%)",
+    "tooltip.bmcrm.produces": "Produces %s",
+    "tooltip.bmcrm.infusing": "Infusing: %s (%s/%s)",
+    "tooltip.bmcrm.uninfused": "Uninfused — needs a Crystal Infuser",
+    "tooltip.bmcrm.crystal.blank": "Uninitialised crystal",
+
+    "block.bmcrm.crystal_infuser": "Crystal Infuser",
+    "block.bmcrm.resonator": "Resonator",
+    "block.bmcrm.placed_crystal": "Crystal",
+    "block.bmcrm.modulator_base": "Modulator Base",
+    "block.bmcrm.silk_touch_modulator": "Modulator: Silk Touch",
+    "block.bmcrm.fortune_modulator": "Modulator: Fortune",
+    "block.bmcrm.auto_smelt_modulator": "Modulator: Auto-Smelt",
+
+    "bmcrm.ponder.resonator_base.header": "The Resonator",
+    "bmcrm.ponder.resonator_base.text_1": "The Resonator interacts with nearby crystals",
+    "bmcrm.ponder.resonator_base.text_2": "A single crystal can only correctly resonate with one Resonator",
+    "bmcrm.ponder.resonator_base.text_3": "Adding a second Resonator nearby creates dissonance",
+    "bmcrm.ponder.resonator_base.text_4": "Multiple crystals can be used within the same Resonator",
+    "bmcrm.ponder.resonator_base.text_5": "A Tuning Fork can be used to show the Resonator's range",
+
+    "bmcrm.ponder.resonator_interference.header": "Interference",
+    "bmcrm.ponder.resonator_interference.text_1": "A Resonator is vulnerable to interference",
+    "bmcrm.ponder.resonator_interference.text_2": "For example, rain near its operating area will reduce the chance of success",
+    "bmcrm.ponder.resonator_interference.text_3": "Noisy neighbors can also interfere",
+    "bmcrm.ponder.resonator_interference.text_4": "It's best to keep your Resonator free from distractions",
+
+    "bmcrm.ponder.resonator_modulators.header": "Modulators",
+    "bmcrm.ponder.resonator_modulators.text_1": "Modulators are special blocks that modify how the Resonator interacts with nearby crystals",
+    "bmcrm.ponder.resonator_modulators.text_2": "They can be placed as part of your crystal arrangement",
+    "bmcrm.ponder.resonator_modulators.text_3": "Some Modulators have an area of effect, and others affect the entire system",
+
+    "bmcrm.ponder.modulator_silk_touch.header": "Modulator: Silk Touch",
+    "bmcrm.ponder.modulator_silk_touch.text_1": "The Silk Touch Modulator allows you to obtain ore blocks instead of raw ore",
+    "bmcrm.ponder.modulator_silk_touch.text_2": "The Silk Touch Modulator affects all crystals directly surrounding it",
+
+    "bmcrm.ponder.modulator_fortune.header": "Modulator: Fortune",
+    "bmcrm.ponder.modulator_fortune.text_1": "Fortune Modulators apply the Fortune enchantment on the crystal whenever it generates resources",
+    "bmcrm.ponder.modulator_fortune.text_2": "The Fortune Modulator operates on a 5x5 plus",
+    "bmcrm.ponder.modulator_fortune.text_3": "Multiple Fortune Modulators can affect one crystal",
+    "bmcrm.ponder.modulator_fortune.text_4": "A Silk Touch Modulator disables the effects of any Fortune Modulators",
+
+    "bmcrm.ponder.modulator_auto_smelt.header": "Modulator: Auto-Smelt",
+    "bmcrm.ponder.modulator_auto_smelt.text_1": "The Auto-Smelt Modulator affects any crystals that sit between it and the Resonator",
+    "bmcrm.ponder.modulator_auto_smelt.text_2": "Any crystal that does not intersect an Auto-Smelt Modulator does not get affected",
+
+    "bmcrm.ponder.tag.creating_crystals": "Creating Crystals",
+    "bmcrm.ponder.tag.creating_crystals.description": "Forming blank crystals and infusing them with a resource",
+    "bmcrm.ponder.tag.using_crystals": "Using Crystals",
+    "bmcrm.ponder.tag.using_crystals.description": "Resonators, and the Modulators that shape what they produce",
+
+    "bmcrm.ponder.shared.tier_label": "%s (%s%% Chance)",
+
+    "bmcrm.ponder.crystal_blank.header": "Blank Crystals",
+    "bmcrm.ponder.crystal_blank.text_1": "Blank Crystals can be created using the Crystal Former",
+    "bmcrm.ponder.crystal_blank.text_2": "There are %s different types of Blank Crystal you can form",
+    "bmcrm.ponder.crystal_blank.text_3": "The blank crystal determines how likely the crystal is to resonate",
+
+    "bmcrm.ponder.crystal_infusing.header": "Infusing Crystals",
+    "bmcrm.ponder.crystal_infusing.text_1": "A Blank crystal doesn't do anything on its own, it needs to be infused",
+    "bmcrm.ponder.crystal_infusing.text_2": "Many materials can be infused into crystals",
+    "bmcrm.ponder.crystal_infusing.text_3": "You cannot infuse a crystal with multiple materials"
+}

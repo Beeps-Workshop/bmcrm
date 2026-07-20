@@ -8,7 +8,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 /**
  * A data-driven "tier" of crystal — the quality axis, formed by the Crystal Former from a
  * base + catalyst pair (glass → amethyst → diamond → ender). Entries live in the datapack
- * registry {@code beepsresourcegenerators:crystal_tier} and are defined by JSON.
+ * registry {@code bmcrm:crystal_tier} and are defined by JSON.
  *
  * @param level      ordinal quality (1..n); higher is better
  * @param color      packed 0xRRGGBB tint used for display

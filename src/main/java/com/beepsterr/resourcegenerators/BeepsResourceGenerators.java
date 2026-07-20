@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Main entrypoint for Beeps Resource Generators.
+ * Main entrypoint for Beep's Mean Crystalline Resource Machine.
  *
  * <p>The mod concept: a central "resonator" block that periodically rolls loot tables
  * contributed by "crystal" items/blocks placed within range — a loose multiblock in the
@@ -29,12 +29,12 @@ import org.slf4j.LoggerFactory;
 @Mod(BeepsResourceGenerators.MOD_ID)
 public class BeepsResourceGenerators {
 
-    public static final String MOD_ID = "beepsresourcegenerators";
+    public static final String MOD_ID = "bmcrm";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public BeepsResourceGenerators(IEventBus modEventBus, ModContainer modContainer) {
-        LOGGER.info("Beeps Resource Generators loading");
+        LOGGER.info("Beep's Mean Crystalline Resource Machine loading");
 
         // Datapack registries and data maps must be declared during mod construction.
         modEventBus.addListener(ModRegistries::onNewDataPackRegistry);

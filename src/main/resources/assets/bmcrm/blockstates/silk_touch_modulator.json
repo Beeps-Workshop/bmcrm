@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "bmcrm:block/silk_touch_modulator" }
+    }
+}

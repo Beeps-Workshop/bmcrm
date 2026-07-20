@@ -69,10 +69,10 @@ IMC — let other mods register materials:
 
 ```java
 // sender
-InterModComms.sendTo("beepsresourcegenerators", "register_material",
+InterModComms.sendTo("bmcrm", "register_material",
     () -> new MaterialMessage(ResourceLocation.parse("mekanism:osmium"),
                               ResourceLocation.parse("mekanism:raw_osmium"),
-                              ResourceLocation.parse("beepsresourcegenerators:crystal/osmium")));
+                              ResourceLocation.parse("bmcrm:crystal/osmium")));
 // receiver
 @SubscribeEvent public void processIMC(InterModProcessEvent event) {
     event.getIMCStream(m -> m.method().equals("register_material"))
@@ -100,7 +100,7 @@ stack.set(CRYSTAL_MATERIAL.get(), ResourceLocation.parse("mekanism:osmium"));
 Optional dependency in `neoforge.mods.toml`:
 
 ```toml
-[[dependencies.beepsresourcegenerators]]
+[[dependencies.bmcrm]]
     modId = "mekanism"
     type = "optional"
     ordering = "AFTER"      # their tags/registries exist before ours resolve

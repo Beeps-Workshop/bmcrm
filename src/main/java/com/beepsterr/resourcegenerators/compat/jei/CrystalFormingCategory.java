@@ -29,7 +29,7 @@ public class CrystalFormingCategory implements IRecipeCategory<CrystalFormingRec
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.beepsresourcegenerators.crystal_former");
+        return Component.translatable("block.bmcrm.crystal_former");
     }
 
     @Override

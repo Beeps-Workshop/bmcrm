@@ -30,7 +30,7 @@ public class CrystalGenerationCategory implements IRecipeCategory<CrystalGenerat
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.beepsresourcegenerators.resonator");
+        return Component.translatable("block.bmcrm.resonator");
     }
 
     @Override

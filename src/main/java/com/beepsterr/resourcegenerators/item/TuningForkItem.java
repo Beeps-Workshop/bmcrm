@@ -59,7 +59,7 @@ public class TuningForkItem extends Item {
     private static void feedback(Player player, String key) {
         if (player != null) {
             player.displayClientMessage(
-                    Component.translatable("item.beepsresourcegenerators.tuning_fork." + key), true);
+                    Component.translatable("item.bmcrm.tuning_fork." + key), true);
         }
     }
 }
