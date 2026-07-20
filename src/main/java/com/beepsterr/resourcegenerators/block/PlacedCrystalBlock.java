@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,12 +44,12 @@ public class PlacedCrystalBlock extends Block implements EntityBlock {
     // The crystal's silhouette for the default UP orientation, rotated into every facing. Perpendicular
     // axes span 4..12; the crystal extends along its facing axis. Only used for the selection outline —
     // collision is empty so players walk through it.
-    private static final VoxelShape SHAPE_UP = Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0);
-    private static final VoxelShape SHAPE_DOWN = Block.box(4.0, 2.0, 4.0, 12.0, 16.0, 12.0);
-    private static final VoxelShape SHAPE_NORTH = Block.box(4.0, 4.0, 2.0, 12.0, 12.0, 16.0);
-    private static final VoxelShape SHAPE_SOUTH = Block.box(4.0, 4.0, 0.0, 12.0, 12.0, 14.0);
-    private static final VoxelShape SHAPE_EAST = Block.box(0.0, 4.0, 4.0, 14.0, 12.0, 12.0);
-    private static final VoxelShape SHAPE_WEST = Block.box(2.0, 4.0, 4.0, 16.0, 12.0, 12.0);
+    private static final VoxelShape SHAPE_UP = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+    private static final VoxelShape SHAPE_DOWN = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+    private static final VoxelShape SHAPE_NORTH = Block.box(2.0, 2.0, 0.0, 14.0, 14.0, 16.0);
+    private static final VoxelShape SHAPE_SOUTH = Block.box(2.0, 2.0, 0.0, 14.0, 14.0, 16.0);
+    private static final VoxelShape SHAPE_EAST = Block.box(0.0, 2.0, 2.0, 16.0, 14.0, 14.0);
+    private static final VoxelShape SHAPE_WEST = Block.box(0.0, 2.0, 2.0, 16.0, 14.0, 14.0);
 
     public PlacedCrystalBlock(Properties properties) {
         super(properties);
@@ -84,9 +83,10 @@ public class PlacedCrystalBlock extends Block implements EntityBlock {
         };
     }
 
+    /** Solid: collision matches the visible outline. */
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.empty();
+        return getShape(state, level, pos, context);
     }
 
     @Override
@@ -101,14 +101,13 @@ public class PlacedCrystalBlock extends Block implements EntityBlock {
         return defaultBlockState().setValue(FACING, context.getClickedFace());
     }
 
-    /** A crystal needs support: the block behind it (opposite its facing) must be sturdy, or a crystal. */
+    /** A crystal needs support: the block behind it (opposite its facing) must be sturdy. */
     @Override
     protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         Direction facing = state.getValue(FACING);
         BlockPos supportPos = pos.relative(facing.getOpposite());
         BlockState support = level.getBlockState(supportPos);
-        return support.isFaceSturdy(level, supportPos, facing)
-                || support.getBlock() instanceof PlacedCrystalBlock;
+        return support.isFaceSturdy(level, supportPos, facing);
     }
 
     /** When a neighbour changes such that the crystal has lost its support, schedule it to break. */
