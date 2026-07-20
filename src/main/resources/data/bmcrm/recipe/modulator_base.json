@@ -1,7 +1,11 @@
 {
     "type": "minecraft:crafting_shaped",
     "category": "misc",
-    "pattern": [ "SIS", "IAI", "SIS" ],
+    "pattern": [
+        "   ",
+        "IAI",
+        "SSS"
+    ],
     "key": {
         "S": { "item": "minecraft:smooth_stone" },
         "I": { "item": "minecraft:iron_ingot" },

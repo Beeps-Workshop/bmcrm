@@ -1,10 +1,13 @@
 {
     "type": "minecraft:crafting_shaped",
     "category": "misc",
-    "pattern": [ "A A", " I ", " I " ],
+    "pattern": [
+        " C ",
+        " SC",
+        "S  " ],
     "key": {
-        "A": { "item": "minecraft:amethyst_shard" },
-        "I": { "item": "minecraft:iron_ingot" }
+        "S": { "item": "minecraft:stick" },
+        "C": { "item": "minecraft:copper_ingot" }
     },
     "result": { "count": 1, "id": "bmcrm:tuning_fork" }
 }
