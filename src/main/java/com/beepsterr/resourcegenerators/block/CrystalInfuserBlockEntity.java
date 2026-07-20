@@ -11,9 +11,18 @@ import com.beepsterr.resourcegenerators.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -43,10 +52,14 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
     /** Ticks between consuming one unit of material. */
     private static final int TICKS_PER_UNIT = 10;
 
+    /** Set when the inventory changes; drained in serverTick to sync the two shown items to clients. */
+    private boolean needsClientSync = false;
+
     private final ItemStackHandler inventory = new ItemStackHandler(2) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            needsClientSync = true;
         }
 
         @Override
@@ -116,6 +129,11 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalInfuserBlockEntity be) {
+        // Push the shown items (crystal + material) to nearby clients whenever the inventory changed.
+        if (be.needsClientSync) {
+            be.needsClientSync = false;
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
+        }
         ItemStack crystal = be.inventory.getStackInSlot(SLOT_CRYSTAL);
         ItemStack material = be.inventory.getStackInSlot(SLOT_MATERIAL);
 
@@ -154,6 +172,10 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private void feedOneUnit(ItemStack crystalRef, ItemStack material, CrystalResource target) {
+        // A drip of the material falling down through the grate onto the crystal.
+        if (level instanceof ServerLevel server) {
+            spawnFeedParticles(server, material);
+        }
         ItemStack crystal = crystalRef.copy();
         CrystalInfusion infusion = crystal.get(ModDataComponents.CRYSTAL_INFUSION.get());
         if (infusion == null) {
@@ -171,6 +193,54 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
 
         inventory.setStackInSlot(SLOT_CRYSTAL, crystal);
         inventory.extractItem(SLOT_MATERIAL, 1, false);
+    }
+
+    /** A short shower of the material's item particles dripping down through the grate. */
+    private void spawnFeedParticles(ServerLevel level, ItemStack material) {
+        if (material.isEmpty()) {
+            return;
+        }
+        ItemParticleOption particle = new ItemParticleOption(ParticleTypes.ITEM, material.copyWithCount(1));
+        RandomSource random = level.getRandom();
+        double x = worldPosition.getX() + 0.5;
+        double y = worldPosition.getY() + 0.82; // just under the grate
+        double z = worldPosition.getZ() + 0.5;
+        for (int i = 0; i < 5; i++) {
+            double ox = (random.nextDouble() - 0.5) * 0.4;
+            double oz = (random.nextDouble() - 0.5) * 0.4;
+            // count 0 -> the vector is the velocity: straight down through the grate.
+            level.sendParticles(particle, x + ox, y, z + oz, 0, 0.0, -1.0, 0.0, 0.12);
+        }
+    }
+
+    // --- Client sync: the crystal + material shown inside the machine (drawn by CrystalInfuserRenderer) ---
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.put("Inventory", inventory.serializeNBT(registries));
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (tag.contains("Inventory")) {
+            inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
+        }
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag, registries);
+        }
     }
 
     @Override

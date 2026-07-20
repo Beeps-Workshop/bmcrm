@@ -11,8 +11,14 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,12 +43,29 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     public static final int SLOT_CATALYST = 1;
     public static final int SLOT_OUTPUT = 2;
 
-    private static final int DEFAULT_MAX_PROGRESS = 100;
+    /** Forming a crystal takes a long time — ~120 seconds. */
+    private static final int DEFAULT_MAX_PROGRESS = 2400;
+    /** How often (ticks) to sync fill progress to clients while forming; the client interpolates between. */
+    private static final int SYNC_INTERVAL = 20;
+
+    /** Set when the inventory changes; drained in serverTick to sync the shown output crystal. */
+    private boolean needsClientSync = false;
+    /** Server-side: whether it's actively forming, and the colour of the tier being formed (-1 = none). */
+    private boolean forming = false;
+    private int formingColor = -1;
+
+    // Client-side view for the renderer (fill column + shown crystal).
+    private int clientProgress = 0;
+    private int clientMaxProgress = DEFAULT_MAX_PROGRESS;
+    private boolean clientForming = false;
+    private int clientColor = -1;
+    private long clientSyncGameTime = 0L;
 
     private final ItemStackHandler inventory = new ItemStackHandler(3) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            needsClientSync = true;
         }
 
         @Override
@@ -115,23 +138,34 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalFormerBlockEntity be) {
         Holder<CrystalTier> match = be.findMatchingTier(level);
         ItemStack result = match == null ? ItemStack.EMPTY : CrystalItem.createBlank(match);
+        boolean forming = match != null && be.canOutput(result);
+        int color = forming ? match.value().color() : -1;
 
-        if (match == null || !be.canOutput(result)) {
+        if (!forming) {
             if (be.progress != 0) {
                 be.progress = 0;
                 be.setChanged();
             }
-            return;
+        } else {
+            be.progress++;
+            if (be.progress >= be.maxProgress) {
+                be.inventory.extractItem(SLOT_BASE, 1, false);
+                be.inventory.extractItem(SLOT_CATALYST, 1, false);
+                be.pushOutput(result);
+                be.progress = 0;
+            }
+            be.setChanged();
         }
 
-        be.progress++;
-        if (be.progress >= be.maxProgress) {
-            be.inventory.extractItem(SLOT_BASE, 1, false);
-            be.inventory.extractItem(SLOT_CATALYST, 1, false);
-            be.pushOutput(result);
-            be.progress = 0;
+        // Sync the fill (progress + tier colour) and the shown output crystal to nearby clients:
+        // on any state change, when the inventory changed, and a slow heartbeat while forming.
+        boolean stateChanged = forming != be.forming || color != be.formingColor;
+        be.forming = forming;
+        be.formingColor = color;
+        if (be.needsClientSync || stateChanged || (forming && level.getGameTime() % SYNC_INTERVAL == 0)) {
+            be.needsClientSync = false;
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
         }
-        be.setChanged();
     }
 
     /** First tier whose base + catalyst ingredients both match the input slots, else null. */
@@ -170,12 +204,67 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         }
     }
 
+    // --- Client sync: the fill column (progress + tier colour) and the shown output crystal ---
+
+    public float fillFraction(float partialTick) {
+        if (clientMaxProgress <= 0 || level == null) {
+            return 0f;
+        }
+        float p = clientProgress;
+        if (clientForming) {
+            float elapsed = ((float) level.getGameTime() + partialTick) - clientSyncGameTime;
+            p = Math.min(clientMaxProgress, clientProgress + Math.max(0f, elapsed));
+        }
+        return Mth.clamp(p / clientMaxProgress, 0f, 1f);
+    }
+
+    /** Packed 0xRRGGBB of the tier currently being formed, or -1 when not forming. */
+    public int getFormingColor() {
+        return clientColor;
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        tag.put("Inventory", inventory.serializeNBT(registries));
+        tag.putInt("Progress", progress);
+        tag.putInt("MaxProgress", maxProgress);
+        tag.putBoolean("Forming", forming);
+        tag.putInt("FormingColor", formingColor);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (tag.contains("Inventory")) {
+            inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
+        }
+        clientProgress = tag.getInt("Progress");
+        clientMaxProgress = tag.getInt("MaxProgress");
+        clientForming = tag.getBoolean("Forming");
+        clientColor = tag.getInt("FormingColor");
+        clientSyncGameTime = level != null ? level.getGameTime() : 0L;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag, registries);
+        }
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Inventory", inventory.serializeNBT(registries));
         tag.putInt("Progress", progress);
-        tag.putInt("MaxProgress", maxProgress);
     }
 
     @Override
@@ -183,7 +272,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         super.loadAdditional(tag, registries);
         inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
         progress = tag.getInt("Progress");
-        maxProgress = tag.contains("MaxProgress") ? tag.getInt("MaxProgress") : DEFAULT_MAX_PROGRESS;
+        maxProgress = DEFAULT_MAX_PROGRESS; // constant per machine, not persisted state
     }
 
     @Override
