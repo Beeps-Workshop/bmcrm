@@ -12,6 +12,7 @@ import com.beepsterr.resourcegenerators.registry.ModBlocks;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
 import com.beepsterr.resourcegenerators.registry.ModItems;
 import com.beepsterr.resourcegenerators.registry.ModMenus;
+import com.beepsterr.resourcegenerators.registry.ModParticles;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -21,6 +22,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 /** Client-only setup: colours the crystal per its resource so variants look distinct. */
 @EventBusSubscriber(modid = BeepsResourceGenerators.MOD_ID, value = Dist.CLIENT)
@@ -61,6 +63,11 @@ public final class ResourceGeneratorsClient {
     @SubscribeEvent
     static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.RESONATOR.get(), ResonatorRenderer::new);
+    }
+
+    @SubscribeEvent
+    static void onRegisterParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.RESONANCE_RING.get(), ResonanceRingParticle.Provider::new);
     }
 
     @SubscribeEvent
