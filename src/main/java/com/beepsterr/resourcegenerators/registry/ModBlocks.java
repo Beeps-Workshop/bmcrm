@@ -39,25 +39,26 @@ public final class ModBlocks {
     /** Shared crafting frame that each Modulator is built on top of. */
     public static final DeferredBlock<Block> MODULATOR_BASE =
             REGISTER.registerBlock("modulator_base", Block::new,
-                    BlockBehaviour.Properties.of().strength(3.5f).sound(SoundType.METAL));
+                    // Non-cube models: don't occlude neighbours.
+                    BlockBehaviour.Properties.of().strength(3.5f).sound(SoundType.METAL).noOcclusion());
 
     /** Silk Touch modulator: a flat 3x3x1 box (covered crystals yield ore blocks). Does not stack. */
     public static final DeferredBlock<ModulatorBlock> SILK_TOUCH_MODULATOR =
             REGISTER.registerBlock("silk_touch_modulator",
                     props -> new ModulatorBlock(Modulation.SILK_TOUCH, AreaShape.BOX, 1, 0, props),
-                    BlockBehaviour.Properties.of().strength(3.5f));
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
 
     /** Fortune modulator: a flat "+" (arm 2). Stacks; suppressed by Silk Touch on the same crystal. */
     public static final DeferredBlock<ModulatorBlock> FORTUNE_MODULATOR =
             REGISTER.registerBlock("fortune_modulator",
                     props -> new ModulatorBlock(Modulation.FORTUNE, AreaShape.PLUS, 2, 0, props),
-                    BlockBehaviour.Properties.of().strength(3.5f));
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
 
     /** Auto-Smelt modulator: beam-based (no area) — smelts a crystal whose beam to the resonator crosses it. */
     public static final DeferredBlock<ModulatorBlock> AUTO_SMELT_MODULATOR =
             REGISTER.registerBlock("auto_smelt_modulator",
                     props -> new ModulatorBlock(Modulation.AUTO_SMELT, AreaShape.BOX, 0, 0, props),
-                    BlockBehaviour.Properties.of().strength(3.5f));
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
 
     /** A crystal placed in the world (the crystal item places this). Non-solid, walk-through. */
     public static final DeferredBlock<PlacedCrystalBlock> PLACED_CRYSTAL =
