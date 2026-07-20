@@ -63,7 +63,7 @@ public class BrgPonderPlugin implements PonderPlugin {
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         // The Resonator's scene chain, in order. Schematic paths resolve to
-        // assets/beepsresourcegenerators/ponder/<path>.nbt.
+        // assets/bmcrm/ponder/<path>.nbt.
         ResourceLocation resonator = ModBlocks.RESONATOR.getId();
         helper.addStoryBoard(resonator, "resonator/basics", BrgPonderScenes::resonatorBase).highlightAllTags();
         helper.addStoryBoard(resonator, "resonator/basics", BrgPonderScenes::resonatorInterference).highlightAllTags();

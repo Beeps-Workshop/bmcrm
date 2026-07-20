@@ -1,0 +1,6 @@
+{
+    "parent": "minecraft:block/cube_all",
+    "textures": {
+        "all": "bmcrm:block/silk_touch_modulator"
+    }
+}

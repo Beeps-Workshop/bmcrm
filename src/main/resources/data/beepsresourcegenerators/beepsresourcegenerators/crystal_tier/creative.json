@@ -1,7 +1,0 @@
-{
-    "level": 999,
-    "color": "#FF69B4",
-    "roll_chance": 1.0,
-    "base_ingredient": { "tag": "beepsresourcegenerators:uncraftable" },
-    "catalyst_ingredient": { "tag": "beepsresourcegenerators:uncraftable" }
-}
