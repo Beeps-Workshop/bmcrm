@@ -7,6 +7,7 @@ import com.beepsterr.resourcegenerators.client.CrystalFormerScreen;
 import com.beepsterr.resourcegenerators.client.CrystalInfuserScreen;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
+import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModBlocks;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
 import com.beepsterr.resourcegenerators.registry.ModItems;
@@ -16,6 +17,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
@@ -53,6 +56,18 @@ public final class ResourceGeneratorsClient {
             }
             return -1;
         }, ModBlocks.PLACED_CRYSTAL.get());
+    }
+
+    @SubscribeEvent
+    static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntities.RESONATOR.get(), ResonatorRenderer::new);
+    }
+
+    @SubscribeEvent
+    static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
+        // Standalone models drawn by ResonatorRenderer (not referenced by any blockstate).
+        event.register(ResonatorRenderer.RING);
+        event.register(ResonatorRenderer.FLUID);
     }
 
     @SubscribeEvent
