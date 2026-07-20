@@ -25,6 +25,20 @@
 		},
 		{
 			"name": "top",
+			"from": [6, 16, 0],
+			"to": [10, 17, 6],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-6, 16, -10]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 1], "texture": "#5"},
+				"east": {"uv": [0, 0, 16, 1], "texture": "#5"},
+				"south": {"uv": [0, 0, 16, 1], "texture": "#5"},
+				"west": {"uv": [0, 0, 16, 1], "texture": "#5"},
+				"up": {"uv": [6, 0, 10, 6], "texture": "#5"},
+				"down": {"uv": [6, 10, 10, 16], "texture": "#5"}
+			}
+		},
+		{
+			"name": "top",
 			"from": [10, 16, 0],
 			"to": [16, 17, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 16, 0]},
@@ -63,20 +77,6 @@
 				"west": {"uv": [0, 0, 16, 1], "texture": "#5"},
 				"up": {"uv": [6, 10, 10, 16], "texture": "#5"},
 				"down": {"uv": [6, 0, 10, 6], "texture": "#5"}
-			}
-		},
-		{
-			"name": "top",
-			"from": [6, 16, 0],
-			"to": [10, 17, 6],
-			"rotation": {"angle": 0, "axis": "y", "origin": [-6, 16, -10]},
-			"faces": {
-				"north": {"uv": [0, 0, 16, 1], "texture": "#5"},
-				"east": {"uv": [0, 0, 16, 1], "texture": "#5"},
-				"south": {"uv": [0, 0, 16, 1], "texture": "#5"},
-				"west": {"uv": [0, 0, 16, 1], "texture": "#5"},
-				"up": {"uv": [6, 0, 10, 6], "texture": "#5"},
-				"down": {"uv": [6, 10, 10, 16], "texture": "#5"}
 			}
 		},
 		{
@@ -222,10 +222,13 @@
 	],
 	"groups": [
 		0,
-		1,
-		2,
-		3,
-		4,
+		{
+			"name": "top",
+			"origin": [-6, 16, -10],
+			"scope": 0,
+			"color": 0,
+			"children": [1, 2, 3, 4]
+		},
 		{
 			"name": "Stone Walls",
 			"origin": [0, 2, 0],

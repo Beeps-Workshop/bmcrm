@@ -1,21 +1,92 @@
 {
-    "__comment": "PLACEHOLDER animated part for the resonator BER — a fluid column authored from y=0 up so the BER can scale it by fill. Replace with the real fluid volume (keep its base at y=0).",
-    "textures": {
-        "0": "minecraft:block/light_blue_stained_glass",
-        "particle": "minecraft:block/light_blue_stained_glass"
-    },
-    "elements": [
-        {
-            "from": [5, 0, 5],
-            "to": [11, 14, 11],
-            "faces": {
-                "north": {"uv": [5, 2, 11, 16], "texture": "#0"},
-                "south": {"uv": [5, 2, 11, 16], "texture": "#0"},
-                "east":  {"uv": [5, 2, 11, 16], "texture": "#0"},
-                "west":  {"uv": [5, 2, 11, 16], "texture": "#0"},
-                "up":    {"uv": [5, 5, 11, 11], "texture": "#0"},
-                "down":  {"uv": [5, 5, 11, 11], "texture": "#0"}
-            }
+  "textures": {
+    "1": "block/smooth_stone",
+    "2": "bmcrm:block/resonator",
+    "3": "bmcrm:block/glass_container",
+    "4": "block/note_block",
+    "5": "block/gold_block",
+    "6": "block/yellow_concrete_powder",
+    "particle": "block/smooth_stone"
+  },
+  "elements": [
+    {
+      "name": "fluid container inner",
+      "from": [
+        4.5,
+        4,
+        4.5
+      ],
+      "to": [
+        7.5,
+        12.5,
+        7.5
+      ],
+      "light_emission": 1,
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          4,
+          4,
+          4
+        ]
+      },
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            5,
+            16,
+            16
+          ],
+          "texture": "#6"
+        },
+        "east": {
+          "uv": [
+            8,
+            5,
+            12,
+            16
+          ],
+          "texture": "#6"
+        },
+        "south": {
+          "uv": [
+            4,
+            5,
+            8,
+            16
+          ],
+          "texture": "#6"
+        },
+        "west": {
+          "uv": [
+            0,
+            5,
+            4,
+            16
+          ],
+          "texture": "#6"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            8,
+            5
+          ],
+          "texture": "#6"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            12,
+            5
+          ],
+          "texture": "#6"
         }
-    ]
+      }
+    }
+  ]
 }

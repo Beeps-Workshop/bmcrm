@@ -33,7 +33,8 @@ public final class ModBlocks {
 
     public static final DeferredBlock<ResonatorBlock> RESONATOR =
             REGISTER.registerBlock("resonator", ResonatorBlock::new,
-                    BlockBehaviour.Properties.of().strength(4.0f));
+                    // Non-cube model (glass tank + overhanging antenna): don't occlude neighbours.
+                    BlockBehaviour.Properties.of().strength(4.0f).noOcclusion());
 
     /** Shared crafting frame that each Modulator is built on top of. */
     public static final DeferredBlock<Block> MODULATOR_BASE =
