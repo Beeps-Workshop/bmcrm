@@ -1,10 +1,10 @@
 {
     "variants": {
-        "": [
-            { "model": "bmcrm:block/placed_crystal" },
-            { "model": "bmcrm:block/placed_crystal", "y": 90 },
-            { "model": "bmcrm:block/placed_crystal", "y": 180 },
-            { "model": "bmcrm:block/placed_crystal", "y": 270 }
-        ]
+        "facing=up":    { "model": "bmcrm:block/placed_crystal" },
+        "facing=down":  { "model": "bmcrm:block/placed_crystal", "x": 180 },
+        "facing=north": { "model": "bmcrm:block/placed_crystal", "x": 90 },
+        "facing=south": { "model": "bmcrm:block/placed_crystal", "x": 90, "y": 180 },
+        "facing=east":  { "model": "bmcrm:block/placed_crystal", "x": 90, "y": 90 },
+        "facing=west":  { "model": "bmcrm:block/placed_crystal", "x": 90, "y": 270 }
     }
 }

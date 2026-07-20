@@ -107,6 +107,11 @@ dependencies {
     compileOnly "net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}"
     devMods "net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}"
 
+    // --- Jade (soft dependency) ---
+    // Compile against the API (its jar bundles snownee.jade.api.*); our @WailaPlugin class is only
+    // ever class-loaded by Jade's own plugin scanner, so it stays dormant when Jade is absent.
+    // NOT bundled, NOT declared in neoforge.mods.toml. In dev, the devMods entry loads the full mod.
+    compileOnly "maven.modrinth:jade:${jade_version}"
     // --- Other dev-only test mods (Modrinth) ---
     // Jade: in-world inspection of the accumulator BE / cached crystals.
     devMods "maven.modrinth:jade:${jade_version}"
