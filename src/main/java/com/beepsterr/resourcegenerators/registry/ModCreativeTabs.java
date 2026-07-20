@@ -32,8 +32,9 @@ public final class ModCreativeTabs {
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, BeepsResourceGenerators.MOD_ID);
 
     public static final Supplier<CreativeModeTab> MAIN = REGISTER.register("main", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.beepsresourcegenerators"))
+            .title(Component.translatable("itemGroup.bmcrm"))
             .icon(() -> new ItemStack(ModItems.CRYSTAL.get()))
+            .withSearchBar()
             .displayItems((params, output) -> {
                 output.accept(ModItems.RESONATOR.get());
                 output.accept(ModItems.CRYSTAL_FORMER.get());

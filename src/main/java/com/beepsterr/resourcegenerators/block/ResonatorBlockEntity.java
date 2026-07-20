@@ -449,7 +449,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.beepsresourcegenerators.resonator");
+        return Component.translatable("block.bmcrm.resonator");
     }
 
     @Nullable

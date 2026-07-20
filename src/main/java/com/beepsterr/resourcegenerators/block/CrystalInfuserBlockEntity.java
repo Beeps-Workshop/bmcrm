@@ -189,7 +189,7 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.beepsresourcegenerators.crystal_infuser");
+        return Component.translatable("block.bmcrm.crystal_infuser");
     }
 
     @Nullable

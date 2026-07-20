@@ -188,7 +188,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.beepsresourcegenerators.crystal_former");
+        return Component.translatable("block.bmcrm.crystal_former");
     }
 
     @Nullable
