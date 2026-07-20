@@ -1,5 +1,0 @@
-{
-    "__comment": "Empty model: the upper half of the resonator only reserves space + collision. The full model (antenna included) renders from the lower half.",
-    "textures": { "particle": "bmcrm:block/resonator" },
-    "elements": []
-}

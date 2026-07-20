@@ -1,6 +1,5 @@
 {
     "variants": {
-        "half=lower": { "model": "bmcrm:block/resonator" },
-        "half=upper": { "model": "bmcrm:block/resonator_upper" }
+        "": { "model": "bmcrm:block/resonator" }
     }
 }
