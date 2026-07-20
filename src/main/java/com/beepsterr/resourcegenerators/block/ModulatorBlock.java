@@ -6,11 +6,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A Modulator block: a resonator scans for these in range, and each projects its {@link Modulation}
@@ -27,6 +32,14 @@ public class ModulatorBlock extends Block implements EntityBlock {
             Codec.intRange(0, 16).fieldOf("vertical_radius").forGetter(ModulatorBlock::verticalRadius),
             propertiesCodec()
     ).apply(inst, ModulatorBlock::new));
+
+    // Collision/outline fitted to each modulator's model.
+    private static final VoxelShape SHAPE_SILK = Block.box(0, 0, 0, 16, 12, 16);
+    private static final VoxelShape SHAPE_FORTUNE = Shapes.or(
+            Block.box(0, 0, 0, 16, 2, 16),    // base plate
+            Block.box(7, 2, 2, 9, 10, 14),    // "+" arm along Z
+            Block.box(2, 2, 7, 14, 10, 9));   // "+" arm along X
+    private static final VoxelShape SHAPE_PLATE = Block.box(0, 0, 0, 16, 2, 16); // auto-smelt: flat pad
 
     private final Modulation modulation;
     private final AreaShape shape;
@@ -63,6 +76,25 @@ public class ModulatorBlock extends Block implements EntityBlock {
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return switch (modulation) {
+            case SILK_TOUCH -> SHAPE_SILK;
+            case FORTUNE -> SHAPE_FORTUNE;
+            case AUTO_SMELT -> SHAPE_PLATE;
+        };
+    }
+
+    /** The Auto-Smelt modulator is a hot plate: stepping onto it burns (unless sneaking / fire-immune). */
+    @Override
+    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+        if (modulation == Modulation.AUTO_SMELT && !entity.isSteppingCarefully() && !entity.fireImmune()) {
+            entity.hurt(level.damageSources().hotFloor(), 1.0F);
+            entity.igniteForSeconds(3.0F);
+        }
+        super.stepOn(level, pos, state, entity);
     }
 
     @Override

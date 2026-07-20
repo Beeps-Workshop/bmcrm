@@ -4,6 +4,7 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.ResonatorBlock;
 import com.beepsterr.resourcegenerators.block.CrystalFormerBlock;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlock;
+import com.beepsterr.resourcegenerators.block.ModulatorBaseBlock;
 import com.beepsterr.resourcegenerators.block.ModulatorBlock;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlock;
 import com.beepsterr.resourcegenerators.crystal.AreaShape;
@@ -37,8 +38,8 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.of().strength(4.0f).noOcclusion());
 
     /** Shared crafting frame that each Modulator is built on top of. */
-    public static final DeferredBlock<Block> MODULATOR_BASE =
-            REGISTER.registerBlock("modulator_base", Block::new,
+    public static final DeferredBlock<ModulatorBaseBlock> MODULATOR_BASE =
+            REGISTER.registerBlock("modulator_base", ModulatorBaseBlock::new,
                     // Non-cube models: don't occlude neighbours.
                     BlockBehaviour.Properties.of().strength(3.5f).sound(SoundType.METAL).noOcclusion());
 
