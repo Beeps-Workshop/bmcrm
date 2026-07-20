@@ -6,6 +6,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
+import com.beepsterr.resourcegenerators.registry.ModParticles;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -21,6 +22,8 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
@@ -125,6 +128,22 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     private float renderSpin = 0f;
     private float renderLastT = Float.NaN;
 
+    // --- Resonance pulse (presentation only): on each cycle a wave sweeps out, every crystal it
+    // reaches "plings", then generators fire their resource burst a beat later. Gameplay is already
+    // resolved instantly in doWork; these effects are just scheduled visuals/sound. ---
+    private static final float WAVE_SPEED = 0.6f;        // blocks the wave front travels per tick
+    private static final int WAVE_TICKS = 12;            // how long the visible ring keeps expanding
+    private static final int BURST_GAP = 3;              // ticks between a crystal's pling and its burst
+    private static final float PITCH_MIN = 0.7f;
+    private static final float PITCH_MAX = 2.0f;
+    private static final float PITCH_PER_BLOCK = 0.14f;  // farther crystals pling higher -> arpeggio sweep
+    private static final float PLING_VOLUME = 0.3f;
+
+    private enum PulseKind { PLING, BURST }
+    private record PulseEffect(int fireTick, PulseKind kind, BlockPos pos, ItemStack sample, int color, float value) {}
+    /** Transient queue of scheduled pulse effects, drained in serverTick; not saved. */
+    private final List<PulseEffect> pending = new ArrayList<>();
+
     /** [0] = progress into the current work cycle, [1] = ticks per cycle. Drives the GUI work bar. */
     private final ContainerData data = new ContainerData() {
         @Override
@@ -199,6 +218,17 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 be.syncedActive = active;
                 level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
             }
+
+            // Drain any scheduled resonance-pulse effects whose moment has arrived.
+            if (!be.pending.isEmpty()) {
+                be.pending.removeIf(ev -> {
+                    if (ev.fireTick() - be.tickCounter <= 0) {
+                        be.fireEffect(serverLevel, ev);
+                        return true;
+                    }
+                    return false;
+                });
+            }
         }
     }
 
@@ -243,6 +273,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         if (cachedPositions.isEmpty()) {
             return;
         }
+        // Kick off the shockwave — one self-expanding ring particle from the resonator's core.
+        level.sendParticles(ModParticles.RESONANCE_RING.get(),
+                center.getX() + 0.5, center.getY() + 0.7, center.getZ() + 0.5, 1, 0.0, 0.0, 0.0, 0.0);
         MinecraftServer server = level.getServer();
         HolderLookup.Provider registries = level.registryAccess();
         RandomSource random = level.getRandom();
@@ -279,6 +312,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             if (owner == null || !owner.equals(center)) {
                 crystal.setOwner(center); // claim (was unowned or orphaned)
             }
+            schedulePling(center, p); // the pulse reaches this crystal after a distance-based delay
 
             float rollChance = data.tier().value().rollChance();
             if (weatherPenalty && (resonatorRained || level.isRainingAt(p))) {
@@ -337,11 +371,46 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 }
                 insertOutput(out);
             }
-            // Visual flair: a burst of dust at the crystal (red while auto-smelting) + a stream to the resonator.
-            spawnGenerateParticles(level, p, autoSmelt ? 0xE23D28 : resource.color());
-            spawnFlingParticles(level, p, center, drops.get(0));
+            // Visual flair, staggered to land a beat after this crystal's pling: a burst of dust
+            // (red while auto-smelting) + a stream to the resonator.
+            int color = autoSmelt ? 0xE23D28 : resource.color();
+            pending.add(new PulseEffect(tickCounter + hitDelay(center, p) + BURST_GAP,
+                    PulseKind.BURST, p, drops.get(0).copy(), color, 0f));
         }
         setChanged();
+    }
+
+    /** Ticks for the pulse front to reach a crystal (≥1), from its distance to the resonator. */
+    private int hitDelay(BlockPos center, BlockPos crystal) {
+        double dist = Math.sqrt(center.distSqr(crystal));
+        return Math.max(1, Math.round((float) (dist / WAVE_SPEED)));
+    }
+
+    /** Schedule a crystal's "pling" — pitched up with distance so the sweep reads as an arpeggio. */
+    private void schedulePling(BlockPos center, BlockPos crystal) {
+        double dist = Math.sqrt(center.distSqr(crystal));
+        float pitch = Mth.clamp(PITCH_MIN + (float) dist * PITCH_PER_BLOCK, PITCH_MIN, PITCH_MAX);
+        pending.add(new PulseEffect(tickCounter + hitDelay(center, crystal),
+                PulseKind.PLING, crystal, ItemStack.EMPTY, 0, pitch));
+    }
+
+    /** Fire one scheduled pulse effect (server-side, broadcast to nearby players). */
+    private void fireEffect(ServerLevel level, PulseEffect ev) {
+        switch (ev.kind()) {
+            case PLING -> {
+                level.playSound(null, ev.pos(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS,
+                        PLING_VOLUME, ev.value());
+                level.sendParticles(ParticleTypes.END_ROD,
+                        ev.pos().getX() + 0.5, ev.pos().getY() + 0.7, ev.pos().getZ() + 0.5,
+                        2, 0.06, 0.06, 0.06, 0.005);
+            }
+            case BURST -> {
+                spawnGenerateParticles(level, ev.pos(), ev.color());
+                if (!ev.sample().isEmpty()) {
+                    spawnFlingParticles(level, ev.pos(), worldPosition, ev.sample());
+                }
+            }
+        }
     }
 
     /** How many modulators of the given kind cover this crystal (overlapping footprints stack). */
