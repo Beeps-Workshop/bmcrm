@@ -16,7 +16,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +32,8 @@ public class CrystalFormerBlock extends Block implements EntityBlock {
 
     public static final MapCodec<CrystalFormerBlock> CODEC = simpleCodec(CrystalFormerBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    /** Full body up to the wood top plate, which overhangs one pixel above the block. */
+    private static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 17.0, 16.0);
 
     public CrystalFormerBlock(Properties properties) {
         super(properties);
@@ -48,6 +53,11 @@ public class CrystalFormerBlock extends Block implements EntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

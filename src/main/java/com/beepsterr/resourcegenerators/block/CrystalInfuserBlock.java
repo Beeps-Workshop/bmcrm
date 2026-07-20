@@ -17,7 +17,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +33,8 @@ public class CrystalInfuserBlock extends Block implements EntityBlock {
 
     public static final MapCodec<CrystalInfuserBlock> CODEC = simpleCodec(CrystalInfuserBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    /** Solid body up to the grate; the prongs above it are decorative and not part of the hitbox. */
+    private static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0);
 
     public CrystalInfuserBlock(Properties properties) {
         super(properties);
@@ -49,6 +54,11 @@ public class CrystalInfuserBlock extends Block implements EntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override

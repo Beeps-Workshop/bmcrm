@@ -24,11 +24,12 @@ public final class ModBlocks {
 
     public static final DeferredBlock<CrystalFormerBlock> CRYSTAL_FORMER =
             REGISTER.registerBlock("crystal_former", CrystalFormerBlock::new,
-                    BlockBehaviour.Properties.of().strength(3.5f));
+                    // Non-cube model with glass panels: don't occlude neighbours or cull interior faces.
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
 
     public static final DeferredBlock<CrystalInfuserBlock> CRYSTAL_INFUSER =
             REGISTER.registerBlock("crystal_infuser", CrystalInfuserBlock::new,
-                    BlockBehaviour.Properties.of().strength(3.5f));
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
 
     public static final DeferredBlock<ResonatorBlock> RESONATOR =
             REGISTER.registerBlock("resonator", ResonatorBlock::new,
