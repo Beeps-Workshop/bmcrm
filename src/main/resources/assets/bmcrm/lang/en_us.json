@@ -1,6 +1,8 @@
 {
     "itemGroup.bmcrm": "BMCRM",
 
+    "config.jade.plugin_bmcrm.crystal_info": "Crystal Info",
+
     "block.bmcrm.crystal_former": "Crystal Former",
 
     "item.bmcrm.crystal": "Crystal",

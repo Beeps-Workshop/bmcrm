@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.item;
 
+import com.beepsterr.resourcegenerators.block.PlacedCrystalBlockEntity;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalInfusion;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
@@ -7,6 +8,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalTier;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
 import com.beepsterr.resourcegenerators.registry.ModItems;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -41,7 +43,22 @@ public class CrystalItem extends BlockItem {
         if (context.getItemInHand().has(ModDataComponents.CRYSTAL_INFUSION.get())) {
             return null;
         }
+        // A crystal may attach to another crystal (on any face), but only if tier AND resource match.
+        // The block it attaches to is the one behind the clicked face — the crystal's support.
+        BlockPos attachPos = context.getClickedPos().relative(context.getClickedFace().getOpposite());
+        if (context.getLevel().getBlockEntity(attachPos) instanceof PlacedCrystalBlockEntity attachCrystal) {
+            CrystalData attachData = attachCrystal.getCrystalData();
+            CrystalData held = context.getItemInHand().get(ModDataComponents.CRYSTAL_DATA.get());
+            if (attachData == null || held == null || !sameCrystal(attachData, held)) {
+                return null;
+            }
+        }
         return super.getPlacementState(context);
+    }
+
+    /** Same tier and same resource (blank/blank also counts as matching). */
+    private static boolean sameCrystal(CrystalData a, CrystalData b) {
+        return a.tier().value() == b.tier().value() && a.resource().equals(b.resource());
     }
 
     /** Build an infused crystal stack for the given tier + resource. */
