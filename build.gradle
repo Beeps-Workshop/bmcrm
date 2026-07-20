@@ -119,6 +119,11 @@ dependencies {
     // for testing the crystal auto-detection / tag-scanning feature.
     devMods "maven.modrinth:mekanism:${mekanism_version}"
     // NOTE: Thermal Series has no 1.21.1 release (tops out at MC 1.20.1), so it is not included.
+
+    // --- Iris + Sodium (dev-only, for screenshots) ---
+    // Iris (shader loader) hard-requires Sodium as its rendering backend on NeoForge.
+    devMods "maven.modrinth:iris:${iris_version}"
+    devMods "maven.modrinth:sodium:${sodium_version}"
 }
 
 // Sync the dev-only test mods into run/mods so FML loads them. Runs automatically
