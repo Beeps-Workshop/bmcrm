@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Ponder storyboards for the Resonator. The starting layouts are authored in-world and loaded from
- * {@code assets/beepsresourcegenerators/ponder/resonator/*.nbt}; the crystals carry their
+ * {@code assets/bmcrm/ponder/resonator/*.nbt}; the crystals carry their
  * {@code CrystalData}, so they render with their real resource tints. Blocks live in the schematic
  * and are revealed over time with {@code showSection}.
  */

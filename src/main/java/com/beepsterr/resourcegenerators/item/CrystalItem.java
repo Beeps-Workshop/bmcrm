@@ -75,38 +75,38 @@ public class CrystalItem extends BlockItem {
             return super.getName(stack);
         }
         if (data.resource().isPresent()) {
-            return Component.translatable("item.beepsresourcegenerators.crystal.named",
+            return Component.translatable("item.bmcrm.crystal.named",
                     data.resource().get().displayName(), tierName(data.tier()));
         }
-        return Component.translatable("item.beepsresourcegenerators.crystal.blank_named", tierName(data.tier()));
+        return Component.translatable("item.bmcrm.crystal.blank_named", tierName(data.tier()));
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         CrystalData data = stack.get(ModDataComponents.CRYSTAL_DATA.get());
         if (data == null) {
-            tooltip.add(Component.translatable("tooltip.beepsresourcegenerators.crystal.blank")
+            tooltip.add(Component.translatable("tooltip.bmcrm.crystal.blank")
                     .withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         CrystalTier tier = data.tier().value();
         int rollPercent = Math.round(tier.rollChance() * 100);
         // "<Tier> Crystal (X%)" — the whole line tinted the tier's colour.
-        tooltip.add(Component.translatable("tooltip.beepsresourcegenerators.tier_line",
+        tooltip.add(Component.translatable("tooltip.bmcrm.tier_line",
                 tierName(data.tier()), rollPercent).withColor(tier.color()));
 
         CrystalInfusion infusion = stack.get(ModDataComponents.CRYSTAL_INFUSION.get());
         if (data.resource().isPresent()) {
             CrystalResource resource = data.resource().get();
             Component produced = Component.literal(resource.displayName().getString()).withColor(resourceColor(resource));
-            tooltip.add(Component.translatable("tooltip.beepsresourcegenerators.produces", produced)
+            tooltip.add(Component.translatable("tooltip.bmcrm.produces", produced)
                     .withStyle(ChatFormatting.GRAY));
         } else if (infusion != null) {
-            tooltip.add(Component.translatable("tooltip.beepsresourcegenerators.infusing",
+            tooltip.add(Component.translatable("tooltip.bmcrm.infusing",
                     infusion.target().displayName(), infusion.amount(), infusion.required())
                     .withStyle(ChatFormatting.LIGHT_PURPLE));
         } else {
-            tooltip.add(Component.translatable("tooltip.beepsresourcegenerators.uninfused")
+            tooltip.add(Component.translatable("tooltip.bmcrm.uninfused")
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
     }

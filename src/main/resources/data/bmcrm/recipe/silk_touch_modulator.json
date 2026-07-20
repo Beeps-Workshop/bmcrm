@@ -1,0 +1,13 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [ "WKW", "SDS", "WSW" ],
+    "key": {
+        "W": { "item": "minecraft:white_wool" },
+        "S": { "item": "minecraft:string" },
+        "D": { "item": "bmcrm:modulator_base" },
+        "K": { "type": "neoforge:components", "items": "minecraft:enchanted_book",
+               "components": { "minecraft:stored_enchantments": { "levels": { "minecraft:silk_touch": 1 } } } }
+    },
+    "result": { "count": 1, "id": "bmcrm:silk_touch_modulator" }
+}

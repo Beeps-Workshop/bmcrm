@@ -1,6 +1,6 @@
 {
     "replace": false,
     "values": [
-        "beepsresourcegenerators:tuning_fork"
+        "bmcrm:tuning_fork"
     ]
 }

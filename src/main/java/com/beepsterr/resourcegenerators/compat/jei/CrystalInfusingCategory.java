@@ -29,7 +29,7 @@ public class CrystalInfusingCategory implements IRecipeCategory<CrystalInfusingR
 
     @Override
     public Component getTitle() {
-        return Component.translatable("block.beepsresourcegenerators.crystal_infuser");
+        return Component.translatable("block.bmcrm.crystal_infuser");
     }
 
     @Override
