@@ -8,6 +8,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModParticles;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -97,7 +98,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     /** A modulator block found in range: its position, kind, footprint shape, and h/v radius. */
     private record ModulatorEntry(BlockPos pos, Modulation modulation, AreaShape shape,
-                                  int horizontalRadius, int verticalRadius) {}
+                                  Direction facing, int horizontalRadius, int verticalRadius) {}
     private int workProgress = 0;
     /** Last global crystal revision we scanned at (transient — forces a scan on first tick after load). */
     private long lastRevision = -1;
@@ -254,7 +255,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 Modulation type = modulator.getModulation();
                 AreaShape shape = modulator.getShape();
                 if (type != null && shape != null) {
-                    modulators.add(new ModulatorEntry(p.immutable(), type, shape,
+                    modulators.add(new ModulatorEntry(p.immutable(), type, shape, modulator.getFacing(),
                             modulator.getHorizontalRadius(), modulator.getVerticalRadius()));
                 }
             }
@@ -421,7 +422,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 continue;
             }
             BlockPos mp = m.pos();
-            if (m.shape().covers(m.horizontalRadius(), m.verticalRadius(),
+            if (m.shape().covers(m.facing(), m.horizontalRadius(), m.verticalRadius(),
                     crystal.getX() - mp.getX(), crystal.getY() - mp.getY(), crystal.getZ() - mp.getZ())) {
                 count++;
             }
