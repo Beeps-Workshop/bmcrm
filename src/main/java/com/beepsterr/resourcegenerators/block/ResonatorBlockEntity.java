@@ -14,7 +14,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -95,6 +99,30 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     /** Last global crystal revision we scanned at (transient — forces a scan on first tick after load). */
     private long lastRevision = -1;
 
+    // --- World-render animation state (the fuel-tank fill + spinning ring drawn by ResonatorRenderer) ---
+    /** How often (ticks) an active resonator pushes an animation sync to nearby clients. */
+    private static final int ANIM_SYNC_INTERVAL = 20;
+    /** Server-side: whether the resonator is currently charging (has work to do and room to store it). */
+    private boolean syncedActive = false;
+    /** Server-side: game time the last work cycle fired, so clients can drive the "Bwomp" spin spike. */
+    private long lastCycleGameTime = Long.MIN_VALUE;
+
+    // Spin curve (degrees/tick). Gentle rise while charging, a sharp spike on each cycle that decays away.
+    private static final float CHARGE_MIN_SPIN = 2.0f;
+    private static final float CHARGE_RISE = 6.0f;
+    private static final float SPIKE_MAX_SPIN = 46.0f;
+    private static final float SPIKE_TAU = 5.0f;   // decay time constant
+    private static final float SPIKE_WINDOW = 40f; // ticks the spike is applied for after a cycle
+
+    // Client-side view of the synced state, plus the render accumulators (per block-entity instance).
+    private int clientWork = 0;
+    private int clientInterval = 0;
+    private boolean clientActive = false;
+    private long clientLastCycle = Long.MIN_VALUE;
+    private long clientSyncGameTime = 0L;
+    private float renderSpin = 0f;
+    private float renderLastT = Float.NaN;
+
     /** [0] = progress into the current work cycle, [1] = ticks per cycle. Drives the GUI work bar. */
     private final ContainerData data = new ContainerData() {
         @Override
@@ -151,12 +179,23 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         }
         if (level instanceof ServerLevel serverLevel) {
             // Charge the work bar only while there's something to do; it pauses when idle or full.
-            if (!be.cachedPositions.isEmpty() && !be.isOutputFull()) {
+            boolean active = !be.cachedPositions.isEmpty() && !be.isOutputFull();
+            boolean fired = false;
+            if (active) {
                 be.workProgress++;
                 if (be.workProgress >= Config.WORK_INTERVAL.get()) {
                     be.workProgress = 0;
+                    be.lastCycleGameTime = serverLevel.getGameTime();
                     be.doWork(serverLevel, pos);
+                    fired = true;
                 }
+            }
+            // Sync the world-render animation (fill/spin/Bwomp) to nearby clients: on any state change,
+            // immediately on a cycle firing (so the spike lands on time), and a slow heartbeat while active.
+            boolean activeChanged = active != be.syncedActive;
+            if (fired || activeChanged || (active && be.tickCounter % ANIM_SYNC_INTERVAL == 0)) {
+                be.syncedActive = active;
+                level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
             }
         }
     }
@@ -429,6 +468,90 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 output.setStackInSlot(i, inSlot);
             }
         }
+    }
+
+    // --- Client sync for the world-render animation (fill level, spin, cycle spike) ---
+
+    private void writeClientAnim(CompoundTag tag) {
+        tag.putInt("Work", workProgress);
+        tag.putInt("Interval", Config.WORK_INTERVAL.get());
+        tag.putBoolean("Active", syncedActive);
+        tag.putLong("LastCycle", lastCycleGameTime);
+    }
+
+    private void readClientAnim(CompoundTag tag) {
+        this.clientWork = tag.getInt("Work");
+        this.clientInterval = tag.getInt("Interval");
+        this.clientActive = tag.getBoolean("Active");
+        this.clientLastCycle = tag.contains("LastCycle") ? tag.getLong("LastCycle") : Long.MIN_VALUE;
+        this.clientSyncGameTime = level != null ? level.getGameTime() : 0L;
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        writeClientAnim(tag);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        readClientAnim(tag);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            readClientAnim(tag);
+        }
+    }
+
+    /** Client: 0..1 fill of the fuel tank, interpolated from the last sync so it climbs smoothly. */
+    public float fillFraction(float partialTick) {
+        if (clientInterval <= 0 || level == null) {
+            return 0f;
+        }
+        float progress = clientWork;
+        if (clientActive) {
+            float elapsed = ((float) level.getGameTime() + partialTick) - clientSyncGameTime;
+            progress = Math.min(clientInterval, clientWork + Math.max(0f, elapsed));
+        }
+        return Mth.clamp(progress / (float) clientInterval, 0f, 1f);
+    }
+
+    /** Client: current ring spin speed (deg/tick) — gentle rise with fill, sharp spike after each cycle. */
+    private float spinSpeed(float now, float fill) {
+        float charge = CHARGE_MIN_SPIN + fill * CHARGE_RISE;
+        if (clientLastCycle != Long.MIN_VALUE) {
+            float since = now - clientLastCycle;
+            if (since >= 0f && since < SPIKE_WINDOW) {
+                float k = (float) Math.exp(-since / SPIKE_TAU);
+                return charge + (SPIKE_MAX_SPIN - charge) * k;
+            }
+        }
+        return charge;
+    }
+
+    /** Client: advance and return the ring's spin angle, integrating the (variable) spin speed over time. */
+    public float advanceSpin(float partialTick) {
+        if (level == null) {
+            return renderSpin;
+        }
+        float now = (float) level.getGameTime() + partialTick;
+        float dt = Float.isNaN(renderLastT) ? 0f : now - renderLastT;
+        renderLastT = now;
+        if (dt < 0f || dt > 5f) { // paused, rewound, or a big gap (chunk reload) — don't lurch
+            dt = 0f;
+        }
+        renderSpin = (renderSpin + spinSpeed(now, fillFraction(partialTick)) * dt) % 360f;
+        return renderSpin;
     }
 
     @Override
