@@ -87,14 +87,13 @@ public class ModulatorBlock extends Block implements EntityBlock {
         };
     }
 
-    /** The Auto-Smelt modulator is a hot plate: stepping onto it burns (unless sneaking / fire-immune). */
+    /** The Auto-Smelt modulator is a hot plate: standing on it sets you alight briefly (unless
+     *  sneaking / fire-immune). Uses entityInside, not stepOn — the pad is too thin for stepOn to see. */
     @Override
-    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (modulation == Modulation.AUTO_SMELT && !entity.isSteppingCarefully() && !entity.fireImmune()) {
-            entity.hurt(level.damageSources().hotFloor(), 1.0F);
-            entity.igniteForSeconds(3.0F);
+            entity.igniteForSeconds(1.0F);
         }
-        super.stepOn(level, pos, state, entity);
     }
 
     @Override

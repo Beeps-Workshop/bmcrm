@@ -107,21 +107,22 @@ public class ResonatorBlock extends Block implements EntityBlock {
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
                                      LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        DoubleBlockHalf half = state.getValue(HALF);
-        // Along the shared face, the two halves depend on each other: if the partner is gone, break.
-        if (direction.getAxis() == Direction.Axis.Y
-                && (half == DoubleBlockHalf.LOWER) == (direction == Direction.UP)) {
-            return neighborState.is(this) && neighborState.getValue(HALF) != half
-                    ? state
-                    : Blocks.AIR.defaultBlockState();
+        // Only the upper half depends on the lower: if its lower is gone, it breaks. The lower half is
+        // self-sufficient (so a lone lower — e.g. a Ponder schematic or a pre-2-tall world — survives
+        // and still renders/works). Breaking either half via a player is handled in playerWillDestroy.
+        if (state.getValue(HALF) == DoubleBlockHalf.UPPER && direction == Direction.DOWN
+                && !(neighborState.is(this) && neighborState.getValue(HALF) == DoubleBlockHalf.LOWER)) {
+            return Blocks.AIR.defaultBlockState();
         }
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
 
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        // In creative, breaking the upper half must silently remove the lower without dropping a dupe.
-        if (!level.isClientSide && player.isCreative() && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
+        // Breaking the upper half also removes the lower; suppress the lower's block loot (the upper's
+        // break already yields the item) — its onRemove still drops the buffer contents. Breaking the
+        // lower instead lets the upper break itself via updateShape.
+        if (!level.isClientSide && state.getValue(HALF) == DoubleBlockHalf.UPPER) {
             BlockPos belowPos = pos.below();
             BlockState below = level.getBlockState(belowPos);
             if (below.is(this) && below.getValue(HALF) == DoubleBlockHalf.LOWER) {
