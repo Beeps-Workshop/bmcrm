@@ -59,7 +59,8 @@ public final class ModBlocks {
     public static final DeferredBlock<ModulatorBlock> AUTO_SMELT_MODULATOR =
             REGISTER.registerBlock("auto_smelt_modulator",
                     props -> new ModulatorBlock(Modulation.AUTO_SMELT, AreaShape.BOX, 0, 0, props),
-                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
+                    // Glows like the little furnace it is.
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion().lightLevel(s -> 13));
 
     /** A crystal placed in the world (the crystal item places this). Non-solid, walk-through. */
     public static final DeferredBlock<PlacedCrystalBlock> PLACED_CRYSTAL =
