@@ -15,13 +15,16 @@ import net.minecraft.world.item.crafting.Ingredient;
  * @param rollChance per-work-cycle probability (0..1) that a crystal of this tier generates
  * @param base       the "base" item the Former consumes for this tier (e.g. a bowl)
  * @param catalyst   the tier-defining item the Former consumes (e.g. glass, a diamond)
+ * @param hidden     when true, hide this tier from player-facing listings/counts (e.g. Ponder);
+ *                   used for testing/creative-only tiers
  */
 public record CrystalTier(
         int level,
         int color,
         float rollChance,
         Ingredient base,
-        Ingredient catalyst
+        Ingredient catalyst,
+        boolean hidden
 ) {
     /** Codec for a {@code "#RRGGBB"} (or bare {@code RRGGBB}) hex string ↔ packed int. */
     public static final Codec<Integer> HEX_COLOR = Codec.STRING.comapFlatMap(
@@ -41,6 +44,7 @@ public record CrystalTier(
             HEX_COLOR.optionalFieldOf("color", 0xFFFFFF).forGetter(CrystalTier::color),
             Codec.FLOAT.optionalFieldOf("roll_chance", 0.05f).forGetter(CrystalTier::rollChance),
             Ingredient.CODEC.fieldOf("base_ingredient").forGetter(CrystalTier::base),
-            Ingredient.CODEC.fieldOf("catalyst_ingredient").forGetter(CrystalTier::catalyst)
+            Ingredient.CODEC.fieldOf("catalyst_ingredient").forGetter(CrystalTier::catalyst),
+            Codec.BOOL.optionalFieldOf("hidden", false).forGetter(CrystalTier::hidden)
     ).apply(inst, CrystalTier::new));
 }

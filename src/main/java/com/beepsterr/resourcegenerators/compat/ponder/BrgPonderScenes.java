@@ -534,13 +534,18 @@ public final class BrgPonderScenes {
         scene.markAsFinished();
     }
 
-    /** Every crystal tier, sorted by level, from the client's registry (empty if unavailable). */
+    /**
+     * Every player-facing crystal tier, sorted by level, from the client's registry (empty if
+     * unavailable). Tiers flagged {@code hidden} (creative/testing-only) are excluded from the count
+     * and from every scene that lists tiers.
+     */
     private static List<Holder.Reference<CrystalTier>> tiers() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             return List.of();
         }
         return mc.level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY).holders()
+                .filter(h -> !h.value().hidden())
                 .sorted(Comparator.comparingInt(h -> h.value().level()))
                 .toList();
     }
