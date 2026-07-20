@@ -107,9 +107,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     /** Server-side: game time the last work cycle fired, so clients can drive the "Bwomp" spin spike. */
     private long lastCycleGameTime = Long.MIN_VALUE;
 
-    // Spin curve (degrees/tick). Gentle rise while charging, a sharp spike on each cycle that decays away.
+    // Spin curve (degrees/tick). Slow most of the charge, then an ease-in "wind-up" that accelerates
+    // into a sharp spike on each cycle, which then decays away.
     private static final float CHARGE_MIN_SPIN = 2.0f;
-    private static final float CHARGE_RISE = 6.0f;
+    private static final float CHARGE_RISE = 13.0f;
+    private static final float WINDUP_EXP = 2.5f;  // >1 keeps it slow early, ramping hard near full
     private static final float SPIKE_MAX_SPIN = 46.0f;
     private static final float SPIKE_TAU = 5.0f;   // decay time constant
     private static final float SPIKE_WINDOW = 40f; // ticks the spike is applied for after a cycle
@@ -528,7 +530,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     /** Client: current ring spin speed (deg/tick) — gentle rise with fill, sharp spike after each cycle. */
     private float spinSpeed(float now, float fill) {
-        float charge = CHARGE_MIN_SPIN + fill * CHARGE_RISE;
+        float windup = (float) Math.pow(fill, WINDUP_EXP);
+        float charge = CHARGE_MIN_SPIN + windup * CHARGE_RISE;
         if (clientLastCycle != Long.MIN_VALUE) {
             float since = now - clientLastCycle;
             if (since >= 0f && since < SPIKE_WINDOW) {
