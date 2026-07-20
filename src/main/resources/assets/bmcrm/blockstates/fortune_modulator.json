@@ -1,5 +1,10 @@
 {
     "variants": {
-        "": { "model": "bmcrm:block/fortune_modulator" }
+        "facing=up":    { "model": "bmcrm:block/fortune_modulator" },
+        "facing=down":  { "model": "bmcrm:block/fortune_modulator", "x": 180 },
+        "facing=north": { "model": "bmcrm:block/fortune_modulator", "x": 90 },
+        "facing=south": { "model": "bmcrm:block/fortune_modulator", "x": 90, "y": 180 },
+        "facing=east":  { "model": "bmcrm:block/fortune_modulator", "x": 90, "y": 90 },
+        "facing=west":  { "model": "bmcrm:block/fortune_modulator", "x": 90, "y": 270 }
     }
 }
