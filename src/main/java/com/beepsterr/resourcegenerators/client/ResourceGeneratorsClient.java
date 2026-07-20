@@ -63,6 +63,8 @@ public final class ResourceGeneratorsClient {
     @SubscribeEvent
     static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.RESONATOR.get(), ResonatorRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRYSTAL_INFUSER.get(), CrystalInfuserRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRYSTAL_FORMER.get(), CrystalFormerRenderer::new);
     }
 
     @SubscribeEvent
@@ -72,9 +74,10 @@ public final class ResourceGeneratorsClient {
 
     @SubscribeEvent
     static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
-        // Standalone models drawn by ResonatorRenderer (not referenced by any blockstate).
+        // Standalone models drawn by the block-entity renderers (not referenced by any blockstate).
         event.register(ResonatorRenderer.RING);
         event.register(ResonatorRenderer.FLUID);
+        event.register(CrystalFormerRenderer.FLUID);
     }
 
     @SubscribeEvent
