@@ -7,13 +7,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -21,9 +19,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * A Modulator block: a resonator scans for these in range, and each projects its {@link Modulation}
  * over a box ({@link #horizontalRadius()} on X/Z, {@link #verticalRadius()} on Y) centered on itself,
  * affecting the subset of crystals inside. The modulation and radii are fixed per registered block.
- * Its BE implements {@link AreaPreview} so the Tuning Fork shows the affected area.
+ * Attaches to a face like a crystal (see {@link FaceAttachedBlock}); its BE implements
+ * {@link AreaPreview} so the Tuning Fork shows the affected area.
  */
-public class ModulatorBlock extends Block implements EntityBlock {
+public class ModulatorBlock extends FaceAttachedBlock implements EntityBlock {
 
     public static final MapCodec<ModulatorBlock> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             Modulation.CODEC.fieldOf("modulation").forGetter(ModulatorBlock::modulation),
@@ -79,7 +78,7 @@ public class ModulatorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    protected VoxelShape getUpShape(BlockState state) {
         return switch (modulation) {
             case SILK_TOUCH -> SHAPE_SILK;
             case FORTUNE -> SHAPE_FORTUNE;

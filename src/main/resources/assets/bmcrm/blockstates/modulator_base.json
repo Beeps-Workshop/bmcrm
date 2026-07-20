@@ -1,1 +1,10 @@
-{ "variants": { "": { "model": "bmcrm:block/modulator_base" } } }
+{
+    "variants": {
+        "facing=up":    { "model": "bmcrm:block/modulator_base" },
+        "facing=down":  { "model": "bmcrm:block/modulator_base", "x": 180 },
+        "facing=north": { "model": "bmcrm:block/modulator_base", "x": 90 },
+        "facing=south": { "model": "bmcrm:block/modulator_base", "x": 90, "y": 180 },
+        "facing=east":  { "model": "bmcrm:block/modulator_base", "x": 90, "y": 90 },
+        "facing=west":  { "model": "bmcrm:block/modulator_base", "x": 90, "y": 270 }
+    }
+}
