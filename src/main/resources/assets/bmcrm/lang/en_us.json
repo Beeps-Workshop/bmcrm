@@ -10,7 +10,7 @@
     "item.bmcrm.tuning_fork": "Tuning Fork",
     "item.bmcrm.tuning_fork.shown": "Showing range",
     "item.bmcrm.tuning_fork.hidden": "Hiding range",
-    "item.bmcrm.tuning_fork.linked": "Pinging this crystal's resonator",
+    "item.bmcrm.tuning_fork.linked": "Showing recent Resonator",
     "item.bmcrm.tuning_fork.unlinked": "This crystal isn't linked to a resonator yet",
 
     "item.bmcrm.crystal.named": "%1$s Infused %2$s Crystal",
