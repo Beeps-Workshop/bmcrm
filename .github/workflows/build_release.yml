@@ -1,81 +1,50 @@
 name: Release build
 
+# bmcrm's release orchestrator: derives the version from the tag, then calls the shared reusable
+# workflows to build -> publish -> announce. Goes in bmcrm at .github/workflows/build_release.yml.
 on:
   release:
     types: [created]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to build and upload'
+        description: 'Tag to build (e.g. v1.1.0)'
         required: true
 
 jobs:
-  build-release:
-    name: Build Release
+  prepare:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # attach the jar to the GitHub Release
-
+    outputs:
+      version: ${{ steps.v.outputs.version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
-
-      - name: Determine version
-        id: versioning
+      - id: v
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            RAW_TAG="${{ github.event.inputs.tag }}"
-          else
-            RAW_TAG="${GITHUB_REF##*/}"
-          fi
+          RAW="${{ github.event.release.tag_name || github.event.inputs.tag }}"
+          echo "version=${RAW#v}" >> "$GITHUB_OUTPUT"
 
-          VERSION="${RAW_TAG#v}"  # strip a leading 'v'
-          echo "Using tag: $RAW_TAG -> version: $VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  build:
+    needs: prepare
+    uses: Beeps-Workshop/.github/.github/workflows/build.yml@main
+    with:
+      build-system: gradle
+      version: ${{ needs.prepare.outputs.version }}
+      artifact-name: bmcrm
+      jar-glob: build/libs/bmcrm-*.jar
 
-      - name: Build JAR
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build -Pmod_version=${{ steps.versioning.outputs.version }}
+  release:
+    needs: [prepare, build]
+    uses: Beeps-Workshop/.github/.github/workflows/release.yml@main
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      artifact-name: bmcrm
+      modrinth-id: 3tJg5Y5b
+      curseforge-id: '1619083'
+      loaders: neoforge
+      game-versions: '1.21.1'
+      version-type: release
+    secrets: inherit
 
-      - name: Collect JAR
-        run: |
-          mkdir out
-          mv build/libs/bmcrm-${{ steps.versioning.outputs.version }}.jar ./out/
-
-      - name: Upload to Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./out/bmcrm-${{ steps.versioning.outputs.version }}.jar
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Artifact (fallback/manual use)
-        if: github.event_name != 'release'
-        uses: actions/upload-artifact@v4
-        with:
-          name: bmcrm-${{ steps.versioning.outputs.version }}
-          path: ./out/bmcrm-${{ steps.versioning.outputs.version }}.jar
-
-      - uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
-        with:
-          modrinth-id: 3tJg5Y5b
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: 1619083
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          version: "${{ steps.versioning.outputs.version }}"
-          version-type: release
-          loaders: |
-            neoforge
-          game-versions: |
-            1.21.1
-          files: ./out/bmcrm-${{ steps.versioning.outputs.version }}.jar
-          changelog: "Release ${{ steps.versioning.outputs.version }}. See the [GitHub Releases](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.versioning.outputs.version }}) for details."
+  notify:
+    needs: release
+    uses: Beeps-Workshop/.github/.github/workflows/notify.yml@main
+    secrets: inherit
