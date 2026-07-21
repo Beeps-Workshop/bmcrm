@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class ResonancePulse {
     private static final float PITCH_PER_BLOCK = 0.14f;  // farther crystals pling higher -> arpeggio sweep
     private static final float PLING_VOLUME = 0.3f;
 
-    private enum Kind { PLING, BURST }
+    private enum Kind { PLING, BURST, NOTE }
 
     private record Effect(int fireTick, Kind kind, BlockPos pos, ItemStack sample, int color, float pitch) {}
 
@@ -51,6 +52,11 @@ public class ResonancePulse {
         double dist = Math.sqrt(center.distSqr(crystal));
         float pitch = Mth.clamp(PITCH_MIN + (float) dist * PITCH_PER_BLOCK, PITCH_MIN, PITCH_MAX);
         pending.add(new Effect(nowTick + hitDelay(center, crystal), Kind.PLING, crystal, ItemStack.EMPTY, 0, pitch));
+    }
+
+    /** Schedule a note block's chime for when the wave front reaches it — sympathetic resonance. */
+    public void scheduleNote(int nowTick, BlockPos center, BlockPos noteBlock) {
+        pending.add(new Effect(nowTick + hitDelay(center, noteBlock), Kind.NOTE, noteBlock, ItemStack.EMPTY, 0, 0f));
     }
 
     /** Schedule a crystal's resource burst (colored dust + a stream to the resonator), a beat after its pling. */
@@ -88,6 +94,9 @@ public class ResonancePulse {
                     spawnFlingParticles(level, ev.pos(), resonator, ev.sample());
                 }
             }
+            case NOTE ->
+                // Fire the note block's own event so it chimes (its note/instrument) and puffs a note particle.
+                level.blockEvent(ev.pos(), Blocks.NOTE_BLOCK, 0, 0);
         }
     }
 
