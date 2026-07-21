@@ -46,6 +46,20 @@ public final class Config {
             .comment("Ticks between resonator work cycles (20 ticks = 1 second). Higher = slower generation.")
             .defineInRange("workIntervalTicks", 400, 20, 24000);
 
+    public static final ModConfigSpec.IntValue MACHINE_ENERGY_CAPACITY = BUILDER
+            .comment("Small internal RF/FE buffer on the Crystal Former and Infuser. When it fills, it is spent",
+                    "as wireless fuel (see machineEnergyBurnTicks). Not shown in the GUI.")
+            .defineInRange("machineEnergyCapacity", 1000, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue MACHINE_ENERGY_BURN_TICKS = BUILDER
+            .comment("Burn time (ticks) a machine gains each time it converts a full energy buffer into fuel.",
+                    "This is the RF-powered equivalent of igniting a solid fuel item.")
+            .defineInRange("machineEnergyBurnTicks", 200, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue MACHINE_ENERGY_MAX_RECEIVE = BUILDER
+            .comment("Max RF/FE a machine accepts per tick from an adjacent cable (0 = no incoming-rate limit).")
+            .defineInRange("machineEnergyMaxReceive", 256, 0, Integer.MAX_VALUE);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean isBlacklisted(ResourceLocation blockId) {

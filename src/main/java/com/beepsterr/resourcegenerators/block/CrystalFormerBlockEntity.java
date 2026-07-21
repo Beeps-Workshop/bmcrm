@@ -42,6 +42,10 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     public static final int SLOT_BASE = 0;
     public static final int SLOT_CATALYST = 1;
     public static final int SLOT_OUTPUT = 2;
+    public static final int SLOT_FUEL = 3;
+
+    /** Power supply: solid fuel (furnace-style) or a filled RF/FE buffer. Required to make progress. */
+    private final MachineFuel fuel = new MachineFuel();
 
     /** Forming a crystal takes a long time — ~120 seconds. */
     private static final int DEFAULT_MAX_PROGRESS = 2400;
@@ -61,7 +65,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     private int clientColor = -1;
     private long clientSyncGameTime = 0L;
 
-    private final ItemStackHandler inventory = new ItemStackHandler(3) {
+    private final ItemStackHandler inventory = new ItemStackHandler(4) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -70,8 +74,23 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            // Output slot is code-filled only; players/hoppers may not insert into it.
-            return slot != SLOT_OUTPUT;
+            return switch (slot) {
+                case SLOT_OUTPUT -> false;                     // code-filled only
+                case SLOT_FUEL -> MachineFuel.isFuel(stack);
+                case SLOT_BASE -> isBaseItem(stack);           // must be some tier's base
+                case SLOT_CATALYST -> isCatalystItem(stack);   // must be some tier's catalyst
+                default -> false;
+            };
+        }
+
+        @Override
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+            // Older saves had fewer slots; don't let the stored Size shrink the handler (fuel slot added).
+            if (nbt.getInt("Size") < getSlots()) {
+                nbt = nbt.copy();
+                nbt.putInt("Size", getSlots());
+            }
+            super.deserializeNBT(provider, nbt);
         }
     };
 
@@ -81,21 +100,29 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? progress : maxProgress;
+            return switch (index) {
+                case 0 -> progress;
+                case 1 -> maxProgress;
+                case 2 -> fuel.getLitTime();
+                case 3 -> fuel.getLitDuration();
+                default -> 0;
+            };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) {
-                progress = value;
-            } else {
-                maxProgress = value;
+            switch (index) {
+                case 0 -> progress = value;
+                case 1 -> maxProgress = value;
+                case 2 -> fuel.setLit(value, fuel.getLitDuration());
+                case 3 -> fuel.setLit(fuel.getLitTime(), value);
+                default -> { }
             }
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 4;
         }
     };
 
@@ -118,16 +145,17 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         if (side == null) {
             return inventory;
         }
+        // Masks are {base, catalyst, output, fuel}; fuel may be fed in from the top or the sides.
         return switch (side) {
             case UP -> topInsert != null ? topInsert
                     : (topInsert = new SidedItemHandler(inventory,
-                    new boolean[]{true, false, false}, new boolean[]{false, false, false}, null));
+                    new boolean[]{true, false, false, true}, new boolean[]{false, false, false, false}, null));
             case DOWN -> bottomOutput != null ? bottomOutput
                     : (bottomOutput = new SidedItemHandler(inventory,
-                    new boolean[]{false, false, false}, new boolean[]{false, false, true}, null));
+                    new boolean[]{false, false, false, false}, new boolean[]{false, false, true, false}, null));
             default -> sideInsert != null ? sideInsert
                     : (sideInsert = new SidedItemHandler(inventory,
-                    new boolean[]{false, true, false}, new boolean[]{false, false, false}, null));
+                    new boolean[]{false, true, false, true}, new boolean[]{false, false, false, false}, null));
         };
     }
 
@@ -135,18 +163,26 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         return data;
     }
 
+    /** The RF/FE buffer, exposed to adjacent cables as an alternative to solid fuel. */
+    public MachineFuel getEnergyStorage() {
+        return fuel;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalFormerBlockEntity be) {
         Holder<CrystalTier> match = be.findMatchingTier(level);
         ItemStack result = match == null ? ItemStack.EMPTY : CrystalItem.createBlank(match);
-        boolean forming = match != null && be.canOutput(result);
+        boolean hasRecipe = match != null && be.canOutput(result);
+        // A recipe alone isn't enough — the machine only advances on ticks it can draw power.
+        boolean powered = be.fuel.tryPower(hasRecipe, be.inventory, SLOT_FUEL);
+        boolean forming = hasRecipe && powered;
         int color = forming ? match.value().color() : -1;
 
-        if (!forming) {
+        if (!hasRecipe) {
             if (be.progress != 0) {
                 be.progress = 0;
                 be.setChanged();
             }
-        } else {
+        } else if (powered) {
             be.progress++;
             if (be.progress >= be.maxProgress) {
                 be.inventory.extractItem(SLOT_BASE, 1, false);
@@ -154,6 +190,9 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
                 be.pushOutput(result);
                 be.progress = 0;
             }
+            be.setChanged();
+        } else {
+            // Recipe primed but unpowered — hold progress where it is, awaiting fuel/energy.
             be.setChanged();
         }
 
@@ -166,6 +205,30 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
             be.needsClientSync = false;
             level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
         }
+    }
+
+    /** Whether the stack is accepted in the base slot (it's the base ingredient of some tier). */
+    public boolean isBaseItem(ItemStack stack) {
+        return matchesAnyTier(stack, true);
+    }
+
+    /** Whether the stack is accepted in the catalyst slot (it's the catalyst of some tier). */
+    public boolean isCatalystItem(ItemStack stack) {
+        return matchesAnyTier(stack, false);
+    }
+
+    private boolean matchesAnyTier(ItemStack stack, boolean asBase) {
+        if (stack.isEmpty() || level == null) {
+            return false;
+        }
+        var registry = level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY);
+        for (Holder.Reference<CrystalTier> tier : registry.holders().toList()) {
+            CrystalTier value = tier.value();
+            if ((asBase ? value.base() : value.catalyst()).test(stack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** First tier whose base + catalyst ingredients both match the input slots, else null. */
@@ -265,6 +328,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         super.saveAdditional(tag, registries);
         tag.put("Inventory", inventory.serializeNBT(registries));
         tag.putInt("Progress", progress);
+        fuel.save(tag);
     }
 
     @Override
@@ -273,6 +337,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
         progress = tag.getInt("Progress");
         maxProgress = DEFAULT_MAX_PROGRESS; // constant per machine, not persisted state
+        fuel.load(tag);
     }
 
     @Override

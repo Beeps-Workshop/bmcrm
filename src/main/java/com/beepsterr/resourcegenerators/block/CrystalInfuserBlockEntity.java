@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -46,6 +47,7 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
 
     public static final int SLOT_MATERIAL = 0;
     public static final int SLOT_CRYSTAL = 1;
+    public static final int SLOT_FUEL = 2;
 
     /** Units of material needed to fully infuse a crystal. */
     public static final int INFUSION_COST = 32;
@@ -55,7 +57,10 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
     /** Set when the inventory changes; drained in serverTick to sync the two shown items to clients. */
     private boolean needsClientSync = false;
 
-    private final ItemStackHandler inventory = new ItemStackHandler(2) {
+    /** Power supply: solid fuel (furnace-style) or a filled RF/FE buffer. Required to make progress. */
+    private final MachineFuel fuel = new MachineFuel();
+
+    private final ItemStackHandler inventory = new ItemStackHandler(3) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -65,14 +70,51 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return switch (slot) {
-                case SLOT_MATERIAL -> !isCrystal(stack);      // materials only (route crystals to the other slot)
-                case SLOT_CRYSTAL -> isBlankCrystal(stack);   // blank / still-infusing crystals only
+                case SLOT_MATERIAL -> isInfusableMaterial(stack);  // only materials that map to a resource
+                case SLOT_CRYSTAL -> isBlankCrystal(stack);        // blank / still-infusing crystals only
+                case SLOT_FUEL -> MachineFuel.isFuel(stack);
                 default -> false;
             };
+        }
+
+        @Override
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+            // Older saves had fewer slots; don't let the stored Size shrink the handler (fuel slot added).
+            if (nbt.getInt("Size") < getSlots()) {
+                nbt = nbt.copy();
+                nbt.putInt("Size", getSlots());
+            }
+            super.deserializeNBT(provider, nbt);
         }
     };
 
     private int feedTimer = 0;
+
+    /** Syncs the furnace-style flame gauge to the open GUI. */
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> fuel.getLitTime();
+                case 1 -> fuel.getLitDuration();
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            switch (index) {
+                case 0 -> fuel.setLit(value, fuel.getLitDuration());
+                case 1 -> fuel.setLit(fuel.getLitTime(), value);
+                default -> { }
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+    };
 
     public CrystalInfuserBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CRYSTAL_INFUSER.get(), pos, state);
@@ -82,8 +124,9 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         return inventory;
     }
 
-    // Cached per-face views: both inputs in from the top, finished crystals out the bottom.
+    // Cached per-face views: inputs + fuel in from the top, fuel from the sides, crystals out the bottom.
     private SidedItemHandler topInsert;
+    private SidedItemHandler sideInsert;
     private SidedItemHandler bottomOutput;
 
     /** The automation view for a given face; null side (internal access) sees the full inventory. */
@@ -92,19 +135,31 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         if (side == null) {
             return inventory;
         }
+        // Masks are {material, crystal, fuel}.
         return switch (side) {
-            // Top accepts both material and blank crystals; isItemValid routes each to its slot.
+            // Top accepts material, blank crystals, and fuel; isItemValid routes each to its slot.
             case UP -> topInsert != null ? topInsert
                     : (topInsert = new SidedItemHandler(inventory,
-                    new boolean[]{true, true}, new boolean[]{false, false}, null));
+                    new boolean[]{true, true, true}, new boolean[]{false, false, false}, null));
             // Bottom only yields the crystal once it is fully infused — never a half-done one.
             case DOWN -> bottomOutput != null ? bottomOutput
                     : (bottomOutput = new SidedItemHandler(inventory,
-                    new boolean[]{false, false}, new boolean[]{false, true},
+                    new boolean[]{false, false, false}, new boolean[]{false, true, false},
                     (slot, current) -> isInfusedCrystal(current)));
-            // Sides expose nothing.
-            default -> null;
+            // Sides accept fuel only.
+            default -> sideInsert != null ? sideInsert
+                    : (sideInsert = new SidedItemHandler(inventory,
+                    new boolean[]{false, false, true}, new boolean[]{false, false, false}, null));
         };
+    }
+
+    public ContainerData getContainerData() {
+        return data;
+    }
+
+    /** The RF/FE buffer, exposed to adjacent cables as an alternative to solid fuel. */
+    public MachineFuel getEnergyStorage() {
+        return fuel;
     }
 
     static boolean isCrystal(ItemStack stack) {
@@ -128,6 +183,14 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         return data != null && data.resource().isPresent();
     }
 
+    /** A non-crystal material that actually maps to a crystal resource (so it can be fed in). */
+    private boolean isInfusableMaterial(ItemStack stack) {
+        if (stack.isEmpty() || isCrystal(stack) || level == null) {
+            return false;
+        }
+        return CrystalInfusionMap.resolve(level.registryAccess(), stack).isPresent();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalInfuserBlockEntity be) {
         // Push the shown items (crystal + material) to nearby clients whenever the inventory changed.
         if (be.needsClientSync) {
@@ -138,19 +201,25 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         ItemStack material = be.inventory.getStackInSlot(SLOT_MATERIAL);
 
         Optional<CrystalResource> target = be.currentTarget(level, crystal, material);
-        if (target.isEmpty()) {
+        boolean work = target.isPresent();
+        // Only draws power on ticks it can actually infuse; a lit fuel never burns to waste while idle.
+        boolean powered = be.fuel.tryPower(work, be.inventory, SLOT_FUEL);
+
+        if (!work) {
             if (be.feedTimer != 0) {
                 be.feedTimer = 0;
                 be.setChanged();
             }
             return;
         }
-
-        be.feedTimer++;
-        if (be.feedTimer >= TICKS_PER_UNIT) {
-            be.feedTimer = 0;
-            be.feedOneUnit(crystal, material, target.get());
+        if (powered) {
+            be.feedTimer++;
+            if (be.feedTimer >= TICKS_PER_UNIT) {
+                be.feedTimer = 0;
+                be.feedOneUnit(crystal, material, target.get());
+            }
         }
+        // else: primed but unpowered — hold feedTimer, awaiting fuel/energy.
         be.setChanged();
     }
 
@@ -248,6 +317,7 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         super.saveAdditional(tag, registries);
         tag.put("Inventory", inventory.serializeNBT(registries));
         tag.putInt("FeedTimer", feedTimer);
+        fuel.save(tag);
     }
 
     @Override
@@ -255,6 +325,7 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
         super.loadAdditional(tag, registries);
         inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
         feedTimer = tag.getInt("FeedTimer");
+        fuel.load(tag);
     }
 
     @Override
@@ -265,6 +336,6 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new CrystalInfuserMenu(containerId, playerInventory, this);
+        return new CrystalInfuserMenu(containerId, playerInventory, this, data);
     }
 }
