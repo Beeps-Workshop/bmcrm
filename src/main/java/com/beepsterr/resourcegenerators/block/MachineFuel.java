@@ -8,10 +8,10 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
- * Shared power supply for the crystal machines. A machine burns fuel like a furnace: an item (or a
- * lump of energy) provides a stretch of burn time, and each tick of progress consumes one tick of it.
- * Power is only ever spent on ticks the machine actually has work to do, so a lit fuel never burns to
- * waste while the machine idles.
+ * Shared power supply for the crystal machines. A machine burns fuel exactly like a furnace: once an
+ * item (or a lump of energy) is lit it burns down every tick — whether or not there's work — and a tick
+ * only makes progress when it's both lit and has work. Fresh fuel is lit only when there's work to
+ * justify it, so idling never <em>starts</em> a burn, but an already-lit fuel is spent regardless.
  *
  * <p>RF/FE is wireless fuel. A small buffer — exposed as a receive-only {@link IEnergyStorage} so an
  * adjacent cable "just works" — fills from cables and, once full, is spent to grant a fixed stretch of
@@ -36,27 +36,31 @@ public class MachineFuel implements IEnergyStorage {
     }
 
     /**
-     * Power one tick. Returns true (and spends the power) only when {@code workAvailable} and a source
-     * is present. When there's no work, nothing burns or drains.
+     * Advance one tick, furnace-style. Any lit fuel burns down regardless of {@code workAvailable};
+     * fresh fuel is only lit when there's work. Returns whether this tick can make progress (lit + work).
+     * Must be called every tick.
      */
-    public boolean tryPower(boolean workAvailable, ItemStackHandler inv, int fuelSlot) {
-        if (!workAvailable) {
-            return false;
-        }
-        // 1) Finish burning what's already lit — never waste it.
+    public boolean tick(boolean workAvailable, ItemStackHandler inv, int fuelSlot) {
+        // Active fuel burns down every tick — even with nothing to do, exactly like a furnace.
         if (litTime > 0) {
             litTime--;
-            return true;
         }
-        // 2) A full energy buffer is spent as wireless fuel, preferred over consuming a solid item.
+        // Light fresh fuel only when burnt out and there's work to justify it: a full energy buffer
+        // (wireless fuel, preferred), otherwise a solid fuel item.
+        if (litTime == 0 && workAvailable) {
+            ignite(inv, fuelSlot);
+        }
+        return litTime > 0 && workAvailable;
+    }
+
+    private void ignite(ItemStackHandler inv, int fuelSlot) {
         int capacity = getMaxEnergyStored();
         if (capacity > 0 && energy >= capacity) {
             energy = 0;
             litDuration = Config.MACHINE_ENERGY_BURN_TICKS.get();
-            litTime = litDuration - 1; // this tick is powered by the converted energy
-            return true;
+            litTime = litDuration;
+            return;
         }
-        // 3) Ignite a fresh solid fuel item.
         ItemStack fuel = inv.getStackInSlot(fuelSlot);
         int burn = burnDuration(fuel);
         if (burn > 0) {
@@ -66,10 +70,8 @@ public class MachineFuel implements IEnergyStorage {
                 inv.setStackInSlot(fuelSlot, remainder); // e.g. lava bucket -> empty bucket
             }
             litDuration = burn;
-            litTime = burn - 1; // this tick is powered by the freshly lit fuel
-            return true;
+            litTime = burn;
         }
-        return false;
     }
 
     public boolean isLit() {
@@ -106,7 +108,7 @@ public class MachineFuel implements IEnergyStorage {
         litDuration = tag.getInt("LitDuration");
     }
 
-    // --- IEnergyStorage: receive-only. The machine drains internally via tryPower(). ---
+    // --- IEnergyStorage: receive-only. The machine spends the buffer internally via tick(). ---
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
