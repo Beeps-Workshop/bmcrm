@@ -37,6 +37,7 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -87,6 +88,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     private List<BlockPos> cachedPositions = List.of();
     private List<ModulatorEntry> cachedModulators = List.of();
+    /** Note blocks in range — purely for the resonance ring's cute sympathetic chime. */
+    private List<BlockPos> cachedNoteBlocks = List.of();
     private int tickCounter = 0;
 
     /** A modulator block found in range: its position, kind, footprint shape, and h/v radius. */
@@ -194,6 +197,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     private void rescan(Level level, BlockPos center) {
         List<BlockPos> positions = new ArrayList<>();
         List<ModulatorEntry> modulators = new ArrayList<>();
+        List<BlockPos> noteBlocks = new ArrayList<>();
         for (BlockPos p : BlockPos.betweenClosed(
                 center.offset(-RADIUS, -RADIUS_DOWN, -RADIUS), center.offset(RADIUS, RADIUS, RADIUS))) {
             if (p.equals(center) || !level.isLoaded(p)) {
@@ -214,10 +218,13 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                     modulators.add(new ModulatorEntry(p.immutable(), type, shape, modulator.getFacing(),
                             modulator.getHorizontalRadius(), modulator.getVerticalRadius()));
                 }
+            } else if (level.getBlockState(p).is(Blocks.NOTE_BLOCK)) {
+                noteBlocks.add(p.immutable());
             }
         }
         this.cachedPositions = positions;
         this.cachedModulators = modulators;
+        this.cachedNoteBlocks = noteBlocks;
     }
 
     /**
@@ -232,6 +239,13 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         }
         // Kick off the shockwave — one self-expanding ring particle from the resonator's core.
         pulse.shockwave(level, center);
+        // Let the ring chime any note blocks it sweeps over, timed to the wave front reaching each.
+        // Buried note blocks stay silent — same "needs air above" rule vanilla uses to play a note.
+        for (BlockPos np : cachedNoteBlocks) {
+            if (level.getBlockState(np).is(Blocks.NOTE_BLOCK) && level.getBlockState(np.above()).isAir()) {
+                pulse.scheduleNote(tickCounter, center, np);
+            }
+        }
         MinecraftServer server = level.getServer();
         HolderLookup.Provider registries = level.registryAccess();
         RandomSource random = level.getRandom();
