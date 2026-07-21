@@ -1,20 +1,17 @@
 package com.beepsterr.resourcegenerators.block;
 
 import com.beepsterr.resourcegenerators.Config;
+import com.beepsterr.resourcegenerators.client.ResonatorAnimator;
 import com.beepsterr.resourcegenerators.crystal.AreaShape;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
-import com.beepsterr.resourcegenerators.registry.ModParticles;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -23,9 +20,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -52,7 +46,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.joml.Vector3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -103,47 +96,18 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     /** Last global crystal revision we scanned at (transient — forces a scan on first tick after load). */
     private long lastRevision = -1;
 
-    // --- World-render animation state (the fuel-tank fill + spinning ring drawn by ResonatorRenderer) ---
+    // --- World-render animation (the fuel-tank fill + spinning ring drawn by ResonatorRenderer) ---
     /** How often (ticks) an active resonator pushes an animation sync to nearby clients. */
     private static final int ANIM_SYNC_INTERVAL = 20;
     /** Server-side: whether the resonator is currently charging (has work to do and room to store it). */
     private boolean syncedActive = false;
     /** Server-side: game time the last work cycle fired, so clients can drive the "Bwomp" spin spike. */
     private long lastCycleGameTime = Long.MIN_VALUE;
+    /** Client-side render state (fill interpolation + spin integration); fed by the update packet. */
+    private final ResonatorAnimator animator = new ResonatorAnimator();
 
-    // Spin curve (degrees/tick). Slow most of the charge, then an ease-in "wind-up" that accelerates
-    // into a sharp spike on each cycle, which then decays away.
-    private static final float CHARGE_MIN_SPIN = 2.0f;
-    private static final float CHARGE_RISE = 13.0f;
-    private static final float WINDUP_EXP = 2.5f;  // >1 keeps it slow early, ramping hard near full
-    private static final float SPIKE_MAX_SPIN = 46.0f;
-    private static final float SPIKE_TAU = 5.0f;   // decay time constant
-    private static final float SPIKE_WINDOW = 40f; // ticks the spike is applied for after a cycle
-
-    // Client-side view of the synced state, plus the render accumulators (per block-entity instance).
-    private int clientWork = 0;
-    private int clientInterval = 0;
-    private boolean clientActive = false;
-    private long clientLastCycle = Long.MIN_VALUE;
-    private long clientSyncGameTime = 0L;
-    private float renderSpin = 0f;
-    private float renderLastT = Float.NaN;
-
-    // --- Resonance pulse (presentation only): on each cycle a wave sweeps out, every crystal it
-    // reaches "plings", then generators fire their resource burst a beat later. Gameplay is already
-    // resolved instantly in doWork; these effects are just scheduled visuals/sound. ---
-    private static final float WAVE_SPEED = 0.6f;        // blocks the wave front travels per tick
-    private static final int WAVE_TICKS = 12;            // how long the visible ring keeps expanding
-    private static final int BURST_GAP = 3;              // ticks between a crystal's pling and its burst
-    private static final float PITCH_MIN = 0.7f;
-    private static final float PITCH_MAX = 2.0f;
-    private static final float PITCH_PER_BLOCK = 0.14f;  // farther crystals pling higher -> arpeggio sweep
-    private static final float PLING_VOLUME = 0.3f;
-
-    private enum PulseKind { PLING, BURST }
-    private record PulseEffect(int fireTick, PulseKind kind, BlockPos pos, ItemStack sample, int color, float value) {}
-    /** Transient queue of scheduled pulse effects, drained in serverTick; not saved. */
-    private final List<PulseEffect> pending = new ArrayList<>();
+    /** Presentation-only resonance pulse: schedules/drains the pling sweep and resource bursts. */
+    private final ResonancePulse pulse = new ResonancePulse();
 
     /** [0] = progress into the current work cycle, [1] = ticks per cycle. Drives the GUI work bar. */
     private final ContainerData data = new ContainerData() {
@@ -221,15 +185,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             }
 
             // Drain any scheduled resonance-pulse effects whose moment has arrived.
-            if (!be.pending.isEmpty()) {
-                be.pending.removeIf(ev -> {
-                    if (ev.fireTick() - be.tickCounter <= 0) {
-                        be.fireEffect(serverLevel, ev);
-                        return true;
-                    }
-                    return false;
-                });
-            }
+            be.pulse.tick(serverLevel, be.tickCounter, pos);
         }
     }
 
@@ -275,8 +231,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             return;
         }
         // Kick off the shockwave — one self-expanding ring particle from the resonator's core.
-        level.sendParticles(ModParticles.RESONANCE_RING.get(),
-                center.getX() + 0.5, center.getY() + 0.7, center.getZ() + 0.5, 1, 0.0, 0.0, 0.0, 0.0);
+        pulse.shockwave(level, center);
         MinecraftServer server = level.getServer();
         HolderLookup.Provider registries = level.registryAccess();
         RandomSource random = level.getRandom();
@@ -313,7 +268,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             if (owner == null || !owner.equals(center)) {
                 crystal.setOwner(center); // claim (was unowned or orphaned)
             }
-            schedulePling(center, p); // the pulse reaches this crystal after a distance-based delay
+            pulse.schedulePling(tickCounter, center, p); // reaches this crystal after a distance-based delay
 
             float rollChance = data.tier().value().rollChance();
             if (weatherPenalty && (resonatorRained || level.isRainingAt(p))) {
@@ -375,43 +330,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             // Visual flair, staggered to land a beat after this crystal's pling: a burst of dust
             // (red while auto-smelting) + a stream to the resonator.
             int color = autoSmelt ? 0xE23D28 : resource.color();
-            pending.add(new PulseEffect(tickCounter + hitDelay(center, p) + BURST_GAP,
-                    PulseKind.BURST, p, drops.get(0).copy(), color, 0f));
+            pulse.scheduleBurst(tickCounter, center, p, drops.get(0).copy(), color);
         }
         setChanged();
-    }
-
-    /** Ticks for the pulse front to reach a crystal (≥1), from its distance to the resonator. */
-    private int hitDelay(BlockPos center, BlockPos crystal) {
-        double dist = Math.sqrt(center.distSqr(crystal));
-        return Math.max(1, Math.round((float) (dist / WAVE_SPEED)));
-    }
-
-    /** Schedule a crystal's "pling" — pitched up with distance so the sweep reads as an arpeggio. */
-    private void schedulePling(BlockPos center, BlockPos crystal) {
-        double dist = Math.sqrt(center.distSqr(crystal));
-        float pitch = Mth.clamp(PITCH_MIN + (float) dist * PITCH_PER_BLOCK, PITCH_MIN, PITCH_MAX);
-        pending.add(new PulseEffect(tickCounter + hitDelay(center, crystal),
-                PulseKind.PLING, crystal, ItemStack.EMPTY, 0, pitch));
-    }
-
-    /** Fire one scheduled pulse effect (server-side, broadcast to nearby players). */
-    private void fireEffect(ServerLevel level, PulseEffect ev) {
-        switch (ev.kind()) {
-            case PLING -> {
-                level.playSound(null, ev.pos(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS,
-                        PLING_VOLUME, ev.value());
-                level.sendParticles(ParticleTypes.END_ROD,
-                        ev.pos().getX() + 0.5, ev.pos().getY() + 0.7, ev.pos().getZ() + 0.5,
-                        2, 0.06, 0.06, 0.06, 0.005);
-            }
-            case BURST -> {
-                spawnGenerateParticles(level, ev.pos(), ev.color());
-                if (!ev.sample().isEmpty()) {
-                    spawnFlingParticles(level, ev.pos(), worldPosition, ev.sample());
-                }
-            }
-        }
     }
 
     /** How many modulators of the given kind cover this crystal (overlapping footprints stack). */
@@ -490,31 +411,6 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
         return out;
     }
 
-    /** A small colored dust burst at a crystal that just generated. */
-    private static void spawnGenerateParticles(ServerLevel level, BlockPos crystal, int rgb) {
-        Vector3f color = new Vector3f(
-                ((rgb >> 16) & 0xFF) / 255.0f,
-                ((rgb >> 8) & 0xFF) / 255.0f,
-                (rgb & 0xFF) / 255.0f);
-        level.sendParticles(new DustParticleOptions(color, 1.2f),
-                crystal.getX() + 0.5, crystal.getY() + 0.6, crystal.getZ() + 0.5,
-                6, 0.22, 0.28, 0.22, 0.0);
-    }
-
-    /** A short trail of item-break particles from the crystal toward the resonator. */
-    private static void spawnFlingParticles(ServerLevel level, BlockPos crystal, BlockPos resonator, ItemStack stack) {
-        ItemParticleOption particle = new ItemParticleOption(ParticleTypes.ITEM, stack);
-        double fx = crystal.getX() + 0.5, fy = crystal.getY() + 0.5, fz = crystal.getZ() + 0.5;
-        double tx = resonator.getX() + 0.5, ty = resonator.getY() + 0.5, tz = resonator.getZ() + 0.5;
-        int steps = 6;
-        for (int i = 0; i <= steps; i++) {
-            double t = i / (double) steps;
-            level.sendParticles(particle,
-                    Mth.lerp(t, fx, tx), Mth.lerp(t, fy, ty), Mth.lerp(t, fz, tz),
-                    1, 0.02, 0.02, 0.02, 0.0);
-        }
-    }
-
     private boolean isOutputFull() {
         for (int i = 0; i < output.getSlots(); i++) {
             ItemStack s = output.getStackInSlot(i);
@@ -552,11 +448,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     }
 
     private void readClientAnim(CompoundTag tag) {
-        this.clientWork = tag.getInt("Work");
-        this.clientInterval = tag.getInt("Interval");
-        this.clientActive = tag.getBoolean("Active");
-        this.clientLastCycle = tag.contains("LastCycle") ? tag.getLong("LastCycle") : Long.MIN_VALUE;
-        this.clientSyncGameTime = level != null ? level.getGameTime() : 0L;
+        animator.read(tag, level != null ? level.getGameTime() : 0L);
     }
 
     @Override
@@ -587,44 +479,12 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
     /** Client: 0..1 fill of the fuel tank, interpolated from the last sync so it climbs smoothly. */
     public float fillFraction(float partialTick) {
-        if (clientInterval <= 0 || level == null) {
-            return 0f;
-        }
-        float progress = clientWork;
-        if (clientActive) {
-            float elapsed = ((float) level.getGameTime() + partialTick) - clientSyncGameTime;
-            progress = Math.min(clientInterval, clientWork + Math.max(0f, elapsed));
-        }
-        return Mth.clamp(progress / (float) clientInterval, 0f, 1f);
-    }
-
-    /** Client: current ring spin speed (deg/tick) — gentle rise with fill, sharp spike after each cycle. */
-    private float spinSpeed(float now, float fill) {
-        float windup = (float) Math.pow(fill, WINDUP_EXP);
-        float charge = CHARGE_MIN_SPIN + windup * CHARGE_RISE;
-        if (clientLastCycle != Long.MIN_VALUE) {
-            float since = now - clientLastCycle;
-            if (since >= 0f && since < SPIKE_WINDOW) {
-                float k = (float) Math.exp(-since / SPIKE_TAU);
-                return charge + (SPIKE_MAX_SPIN - charge) * k;
-            }
-        }
-        return charge;
+        return level == null ? 0f : animator.fillFraction(level.getGameTime(), partialTick);
     }
 
     /** Client: advance and return the ring's spin angle, integrating the (variable) spin speed over time. */
     public float advanceSpin(float partialTick) {
-        if (level == null) {
-            return renderSpin;
-        }
-        float now = (float) level.getGameTime() + partialTick;
-        float dt = Float.isNaN(renderLastT) ? 0f : now - renderLastT;
-        renderLastT = now;
-        if (dt < 0f || dt > 5f) { // paused, rewound, or a big gap (chunk reload) — don't lurch
-            dt = 0f;
-        }
-        renderSpin = (renderSpin + spinSpeed(now, fillFraction(partialTick)) * dt) % 360f;
-        return renderSpin;
+        return level == null ? animator.currentSpin() : animator.advanceSpin(level.getGameTime(), partialTick);
     }
 
     @Override
