@@ -22,5 +22,15 @@ public final class ModCapabilities {
                 Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.RESONATOR.get(),
                 (be, side) -> be.getOutput());
+
+        // Energy input: the Former and Infuser accept RF/FE from any side as an alternative to fuel.
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CRYSTAL_FORMER.get(),
+                (be, side) -> be.getEnergyStorage());
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CRYSTAL_INFUSER.get(),
+                (be, side) -> be.getEnergyStorage());
     }
 }

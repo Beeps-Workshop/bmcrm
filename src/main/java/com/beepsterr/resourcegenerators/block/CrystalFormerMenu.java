@@ -18,14 +18,14 @@ import net.neoforged.neoforge.items.SlotItemHandler;
  */
 public class CrystalFormerMenu extends AbstractContainerMenu {
 
-    private static final int MACHINE_SLOTS = 3;
+    private static final int MACHINE_SLOTS = 4;
 
     private final CrystalFormerBlockEntity blockEntity;
     private final ContainerData data;
 
     /** Client constructor — resolves the block entity from the synced position. */
     public CrystalFormerMenu(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf) {
-        this(containerId, playerInventory, resolve(playerInventory, buf.readBlockPos()), new SimpleContainerData(2));
+        this(containerId, playerInventory, resolve(playerInventory, buf.readBlockPos()), new SimpleContainerData(4));
     }
 
     /** Server constructor. */
@@ -34,12 +34,13 @@ public class CrystalFormerMenu extends AbstractContainerMenu {
         this.blockEntity = blockEntity;
         this.data = data;
 
-        // Triangle: two inputs side by side up top -> arrow -> centered output below.
-        // Add order stays base/catalyst/output so menu slot indices match inventory indices.
+        // Layout authored in the GUI editor: two inputs up top, big vertical arrow (fills top to
+        // bottom) down to the output, fuel bottom-right. Add order matches inventory indices.
         var inv = blockEntity.getInventory();
-        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_BASE, 61, 17));      // top-left
-        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_CATALYST, 99, 17));  // top-right
-        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_OUTPUT, 80, 53));    // bottom-center
+        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_BASE, 56, 17));      // input1
+        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_CATALYST, 92, 17));  // input2
+        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_OUTPUT, 92, 52));    // output
+        addSlot(new SlotItemHandler(inv, CrystalFormerBlockEntity.SLOT_FUEL, 140, 53));     // fuel, bottom-right
 
         // Player inventory (3 rows) + hotbar.
         for (int row = 0; row < 3; row++) {
@@ -68,6 +69,18 @@ public class CrystalFormerMenu extends AbstractContainerMenu {
         return (maxProgress == 0 || progress == 0) ? 0 : progress * maxPixels / maxProgress;
     }
 
+    /** Remaining flame height in pixels (0..maxPixels) for the current fuel item. */
+    public int getScaledFlame(int maxPixels) {
+        int litTime = data.get(2);
+        int litDuration = data.get(3);
+        return (litDuration == 0 || litTime == 0) ? 0 : litTime * maxPixels / litDuration;
+    }
+
+    /** Packed 0xRRGGBB colour of the tier being formed (for tinting the vessel fill), or -1 if none. */
+    public int getFormingColor() {
+        return blockEntity != null ? blockEntity.getFormingColor() : -1;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
@@ -83,8 +96,10 @@ public class CrystalFormerMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // Player inventory -> the two input slots only.
-                if (!moveItemStackTo(stack, CrystalFormerBlockEntity.SLOT_BASE, CrystalFormerBlockEntity.SLOT_CATALYST + 1, false)) {
+                // Player inventory -> fuel slot if it burns, otherwise the two input slots.
+                boolean moved = MachineFuel.isFuel(stack)
+                        && moveItemStackTo(stack, CrystalFormerBlockEntity.SLOT_FUEL, CrystalFormerBlockEntity.SLOT_FUEL + 1, false);
+                if (!moved && !moveItemStackTo(stack, CrystalFormerBlockEntity.SLOT_BASE, CrystalFormerBlockEntity.SLOT_CATALYST + 1, false)) {
                     return ItemStack.EMPTY;
                 }
             }

@@ -6,33 +6,40 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 /**
- * Container menu for the Crystal Infuser: a material slot and a crystal slot (no output — the
- * crystal fills in place, shown by its durability bar).
+ * Container menu for the Crystal Infuser: a material slot, a crystal slot, and a fuel slot (no output
+ * — the crystal fills in place, shown by its durability bar). Synced data drives the flame + RF gauges.
  */
 public class CrystalInfuserMenu extends AbstractContainerMenu {
 
-    private static final int MACHINE_SLOTS = 2;
+    private static final int MACHINE_SLOTS = 3;
 
     private final CrystalInfuserBlockEntity blockEntity;
+    private final ContainerData data;
 
     /** Client constructor. */
     public CrystalInfuserMenu(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf) {
-        this(containerId, playerInventory, resolve(playerInventory, buf.readBlockPos()));
+        this(containerId, playerInventory, resolve(playerInventory, buf.readBlockPos()), new SimpleContainerData(2));
     }
 
     /** Server constructor. */
-    public CrystalInfuserMenu(int containerId, Inventory playerInventory, CrystalInfuserBlockEntity blockEntity) {
+    public CrystalInfuserMenu(int containerId, Inventory playerInventory, CrystalInfuserBlockEntity blockEntity, ContainerData data) {
         super(ModMenus.CRYSTAL_INFUSER.get(), containerId);
         this.blockEntity = blockEntity;
+        this.data = data;
 
+        // Layout authored in the GUI editor: input up top -> (infusion bubbles) -> output below,
+        // with the fuel slot bottom-right. Add order matches inventory indices.
         var inv = blockEntity.getInventory();
-        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_MATERIAL, 44, 35));
-        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_CRYSTAL, 116, 35));
+        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_MATERIAL, 75, 18));   // input
+        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_CRYSTAL, 75, 60));    // output
+        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_FUEL, 140, 53));      // fuel, bottom-right
 
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -42,6 +49,8 @@ public class CrystalInfuserMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) {
             addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
         }
+
+        addDataSlots(data);
     }
 
     private static CrystalInfuserBlockEntity resolve(Inventory playerInventory, BlockPos pos) {
@@ -49,6 +58,13 @@ public class CrystalInfuserMenu extends AbstractContainerMenu {
             return infuser;
         }
         throw new IllegalStateException("No CrystalInfuserBlockEntity at " + pos);
+    }
+
+    /** Remaining flame height in pixels (0..maxPixels) for the current fuel item. */
+    public int getScaledFlame(int maxPixels) {
+        int litTime = data.get(0);
+        int litDuration = data.get(1);
+        return (litDuration == 0 || litTime == 0) ? 0 : litTime * maxPixels / litDuration;
     }
 
     @Override
@@ -65,8 +81,10 @@ public class CrystalInfuserMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // Player inventory -> machine slots (slot validity routes crystals vs materials).
-                if (!moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) {
+                // Player inventory -> fuel slot if it burns, else material/crystal (slot validity routes those).
+                boolean moved = MachineFuel.isFuel(stack)
+                        && moveItemStackTo(stack, CrystalInfuserBlockEntity.SLOT_FUEL, CrystalInfuserBlockEntity.SLOT_FUEL + 1, false);
+                if (!moved && !moveItemStackTo(stack, CrystalInfuserBlockEntity.SLOT_MATERIAL, CrystalInfuserBlockEntity.SLOT_FUEL, false)) {
                     return ItemStack.EMPTY;
                 }
             }
