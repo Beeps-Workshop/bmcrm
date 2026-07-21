@@ -1,0 +1,12 @@
+# Dependabot version updates. See:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  - package-ecosystem: "gradle" # build.gradle / gradle.properties in the repo root
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "github-actions" # keeps workflow actions (incl. SHA-pinned ones) up to date
+    directory: "/"
+    schedule:
+      interval: "daily"
