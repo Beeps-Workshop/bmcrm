@@ -90,7 +90,7 @@ jobs:
           mv build/libs/bmcrm-${{ steps.versioning.outputs.version }}.jar ./out/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bmcrm-${{ steps.versioning.outputs.version }}
           path: ./out/bmcrm-${{ steps.versioning.outputs.version }}.jar
