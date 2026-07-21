@@ -78,4 +78,4 @@ jobs:
           game-versions: |
             1.21.1
           files: ./out/bmcrm-${{ steps.versioning.outputs.version }}.jar
-          changelog: "Release ${{ steps.versioning.outputs.version }}. See the [GitHub Releases](https://github.com/BeepSterr/bmcrm/releases/tag/v${{ steps.versioning.outputs.version }}) for details."
+          changelog: "Release ${{ steps.versioning.outputs.version }}. See the [GitHub Releases](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.versioning.outputs.version }}) for details."
