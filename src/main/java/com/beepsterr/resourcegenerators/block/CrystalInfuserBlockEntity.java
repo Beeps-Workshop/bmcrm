@@ -202,12 +202,16 @@ public class CrystalInfuserBlockEntity extends BlockEntity implements MenuProvid
 
         Optional<CrystalResource> target = be.currentTarget(level, crystal, material);
         boolean work = target.isPresent();
-        // Only draws power on ticks it can actually infuse; a lit fuel never burns to waste while idle.
-        boolean powered = be.fuel.tryPower(work, be.inventory, SLOT_FUEL);
+        // Burn fuel furnace-style (lit fuel drains every tick); a tick infuses only when lit + work.
+        boolean powered = be.fuel.tick(work, be.inventory, SLOT_FUEL);
 
         if (!work) {
+            boolean changed = be.fuel.isLit(); // a fuel still burning down while idle must be persisted
             if (be.feedTimer != 0) {
                 be.feedTimer = 0;
+                changed = true;
+            }
+            if (changed) {
                 be.setChanged();
             }
             return;

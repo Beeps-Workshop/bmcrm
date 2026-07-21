@@ -172,14 +172,18 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         Holder<CrystalTier> match = be.findMatchingTier(level);
         ItemStack result = match == null ? ItemStack.EMPTY : CrystalItem.createBlank(match);
         boolean hasRecipe = match != null && be.canOutput(result);
-        // A recipe alone isn't enough — the machine only advances on ticks it can draw power.
-        boolean powered = be.fuel.tryPower(hasRecipe, be.inventory, SLOT_FUEL);
+        // Burn fuel furnace-style (lit fuel drains every tick); a tick advances only when lit + work.
+        boolean powered = be.fuel.tick(hasRecipe, be.inventory, SLOT_FUEL);
         boolean forming = hasRecipe && powered;
         int color = forming ? match.value().color() : -1;
 
         if (!hasRecipe) {
+            boolean changed = be.fuel.isLit(); // a fuel still burning down while idle must be persisted
             if (be.progress != 0) {
                 be.progress = 0;
+                changed = true;
+            }
+            if (changed) {
                 be.setChanged();
             }
         } else if (powered) {
