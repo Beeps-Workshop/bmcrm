@@ -41,8 +41,15 @@ public class TuningForkItem extends Item {
 
         if (be instanceof PlacedCrystalBlockEntity crystal) {
             if (level.isClientSide) {
+                com.beepsterr.resourcegenerators.crystal.CrystalData data = crystal.getCrystalData();
                 BlockPos owner = crystal.getOwner();
-                if (owner != null) {
+                if (data == null || data.resource().isEmpty()) {
+                    // A blank crystal has no resource, so the resonator ignores it entirely. Reuse the
+                    // item tooltip's wording rather than a tuning-fork-specific message.
+                    if (player != null) {
+                        player.displayClientMessage(Component.translatable("tooltip.bmcrm.uninfused"), true);
+                    }
+                } else if (owner != null) {
                     com.beepsterr.resourcegenerators.client.TuningForkOverlay.pingResonator(level, pos, owner);
                     feedback(player, "linked");
                 } else {
