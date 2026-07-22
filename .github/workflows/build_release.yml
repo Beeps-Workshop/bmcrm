@@ -1,7 +1,7 @@
 name: Release build
 
 # bmcrm's release orchestrator: derives the version from the tag, then calls the shared reusable
-# workflows to build -> publish -> announce. Goes in bmcrm at .github/workflows/build_release.yml.
+# workflows to build -> publish. Goes in bmcrm at .github/workflows/build_release.yml.
 on:
   release:
     types: [created]
@@ -42,9 +42,4 @@ jobs:
       loaders: neoforge
       game-versions: '1.21.1'
       version-type: release
-    secrets: inherit
-
-  notify:
-    needs: release
-    uses: Beeps-Workshop/.github/.github/workflows/notify.yml@main
     secrets: inherit
