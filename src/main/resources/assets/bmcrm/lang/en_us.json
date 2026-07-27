@@ -78,16 +78,33 @@
     "bmcrm.ponder.modulator_auto_smelt.text_2": "Any crystal that does not intersect an Auto-Smelt Modulator does not get affected",
 
     "bmcrm.ponder.tag.creating_crystals": "Creating Crystals",
-    "bmcrm.ponder.tag.creating_crystals.description": "Forming blank crystals and infusing them with a resource",
+    "bmcrm.ponder.tag.creating_crystals.description": "Forming blank crystals, infusing them with a resource, and melting them down",
     "bmcrm.ponder.tag.using_crystals": "Using Crystals",
     "bmcrm.ponder.tag.using_crystals.description": "Resonators, and the Modulators that shape what they produce",
 
-    "bmcrm.ponder.shared.tier_label": "%s (%s%% Chance)",
+    "bmcrm.ponder.shared.tier_label": "%s (%s%% Chance, holds %s mB)",
+    "bmcrm.ponder.shared.machine_power": "The %s requires energy to operate. It can be provided with fuel, or supplied via RF",
+
+    "bmcrm.ponder.machine_former.header": "The Crystal Former",
+    "bmcrm.ponder.machine_former.text_1": "The Crystal Former is used to create blank crystals",
+    "bmcrm.ponder.machine_former.text_2": "It takes a while to form a crystal...",
+    "bmcrm.ponder.machine_former.text_3": "When it's done, you can take the crystal and start Infusing it at the Crystal Infuser",
+
+    "bmcrm.ponder.machine_infuser.header": "The Crystal Infuser",
+    "bmcrm.ponder.machine_infuser.text_1": "The crystal infuser turns your blank crystals into usable crystals",
+    "bmcrm.ponder.machine_infuser.text_2": "You'll need to infuse 32 of any resource into the crystal to attune it to that resource",
+    "bmcrm.ponder.machine_infuser.text_3": "It is not possible to change the resource afterwards, or to mix different resources",
+
+    "bmcrm.ponder.machine_crucible.header": "The Crystal Crucible",
+    "bmcrm.ponder.machine_crucible.text_1": "Whenever a Resonator interacts with a crystal, the crystal gains Liquid Resonance",
+    "bmcrm.ponder.machine_crucible.text_2": "The Crystal Crucible can be used to melt down crystals, harvesting the Liquid Resonance stored inside",
+    "bmcrm.ponder.machine_crucible.text_3": "Melting a crystal destroys it, so only melt one once it has soaked up all it can hold",
+    "bmcrm.ponder.machine_crucible.text_4": "Liquid resonance can be used to create new materials and better crystals",
 
     "bmcrm.ponder.crystal_blank.header": "Blank Crystals",
     "bmcrm.ponder.crystal_blank.text_1": "Blank Crystals can be created using the Crystal Former",
     "bmcrm.ponder.crystal_blank.text_2": "There are %s different types of Blank Crystal you can form",
-    "bmcrm.ponder.crystal_blank.text_3": "The blank crystal determines how likely the crystal is to resonate",
+    "bmcrm.ponder.crystal_blank.text_3": "The blank crystal sets how often it resonates, and how much resonance it can hold",
 
     "bmcrm.ponder.crystal_infusing.header": "Infusing Crystals",
     "bmcrm.ponder.crystal_infusing.text_1": "A Blank crystal doesn't do anything on its own, it needs to be infused",
