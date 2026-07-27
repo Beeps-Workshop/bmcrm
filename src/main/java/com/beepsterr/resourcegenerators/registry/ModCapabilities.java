@@ -20,6 +20,10 @@ public final class ModCapabilities {
                 (be, side) -> be.getInventoryForSide(side));
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
+                ModBlockEntities.CRYSTAL_CRUCIBLE.get(),
+                (be, side) -> be.getInventoryForSide(side));
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
                 ModBlockEntities.RESONATOR.get(),
                 (be, side) -> be.getOutput());
 
@@ -32,5 +36,15 @@ public final class ModCapabilities {
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.CRYSTAL_INFUSER.get(),
                 (be, side) -> be.getEnergyStorage());
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.CRYSTAL_CRUCIBLE.get(),
+                (be, side) -> be.getEnergyStorage());
+
+        // Fluid: the Crucible works resonance in both directions, so pipes may fill and drain it.
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.CRYSTAL_CRUCIBLE.get(),
+                (be, side) -> be.getFluidHandler());
     }
 }

@@ -1,6 +1,7 @@
 package com.beepsterr.resourcegenerators.item;
 
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlockEntity;
+import com.beepsterr.resourcegenerators.crystal.CrystalCharge;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalInfusion;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
@@ -116,6 +117,14 @@ public class CrystalItem extends BlockItem {
             tooltip.add(Component.translatable("tooltip.bmcrm.uninfused")
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
+
+        // Banked resonance, once the crystal has actually generated something.
+        int capacity = CrystalCharge.capacity(stack);
+        int charge = CrystalCharge.get(stack);
+        if (capacity > 0 && charge > 0) {
+            tooltip.add(Component.translatable("tooltip.bmcrm.resonance", charge, capacity)
+                    .withStyle(ChatFormatting.AQUA));
+        }
     }
 
     /** Resource colour matching the item icon on the client; a server-safe fallback otherwise. */
@@ -126,22 +135,26 @@ public class CrystalItem extends BlockItem {
         return resource.color();
     }
 
-    // --- Durability bar shows infusion fill progress on a blank crystal ---
+    // --- Durability bar: infusion progress while a blank is filling, banked resonance afterwards ---
+
+    /** The bar colour for a crystal's banked resonance — matches the fluid it melts down into. */
+    private static final int RESONANCE_BAR_COLOR = 0x5FD8E8;
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return stack.has(ModDataComponents.CRYSTAL_INFUSION.get());
+        return stack.has(ModDataComponents.CRYSTAL_INFUSION.get()) || CrystalCharge.get(stack) > 0;
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
         CrystalInfusion infusion = stack.get(ModDataComponents.CRYSTAL_INFUSION.get());
-        return infusion == null ? 0 : Mth.clamp(Math.round(13.0f * infusion.fraction()), 0, 13);
+        float fraction = infusion != null ? infusion.fraction() : CrystalCharge.fraction(stack);
+        return Mth.clamp(Math.round(13.0f * fraction), 0, 13);
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
         CrystalInfusion infusion = stack.get(ModDataComponents.CRYSTAL_INFUSION.get());
-        return infusion == null ? 0xFFFFFF : infusion.target().color();
+        return infusion == null ? RESONANCE_BAR_COLOR : infusion.target().color();
     }
 }

@@ -2,6 +2,7 @@ package com.beepsterr.resourcegenerators.compat.jei;
 
 import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.Config;
+import com.beepsterr.resourcegenerators.crystal.CrystalCharge;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
@@ -10,6 +11,7 @@ import com.beepsterr.resourcegenerators.item.CrystalItem;
 import com.beepsterr.resourcegenerators.registry.ModBlocks;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
 import com.beepsterr.resourcegenerators.registry.ModItems;
+import com.beepsterr.resourcegenerators.registry.ModRecipes;
 import com.beepsterr.resourcegenerators.registry.ModRegistries;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -36,7 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-/** JEI integration: shows Crystal Former and Crystal Infuser recipes, generated from data. */
+/** JEI integration: shows Former, Infuser, Resonator and Crucible recipes, generated from data. */
 @JeiPlugin
 public class BrgJeiPlugin implements IModPlugin {
 
@@ -80,7 +82,9 @@ public class BrgJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new CrystalFormingCategory(guiHelper),
                 new CrystalInfusingCategory(guiHelper),
-                new CrystalGenerationCategory(guiHelper));
+                new CrystalGenerationCategory(guiHelper),
+                new ResonanceInfusionCategory(guiHelper),
+                new CrystalMeltingCategory(guiHelper));
     }
 
     @Override
@@ -93,6 +97,12 @@ public class BrgJeiPlugin implements IModPlugin {
         registration.addRecipes(CrystalFormingCategory.TYPE, forming(access));
         registration.addRecipes(CrystalInfusingCategory.TYPE, infusing(access));
         registration.addRecipes(CrystalGenerationCategory.TYPE, generation(access));
+        registration.addRecipes(CrystalMeltingCategory.TYPE, melting(access));
+        // Crucible infusions come from the recipe manager — they're real datapack recipes.
+        registration.addRecipes(ResonanceInfusionCategory.TYPE, mc.level.getRecipeManager()
+                .getAllRecipesFor(ModRecipes.RESONANCE_INFUSION.get()).stream()
+                .map(net.minecraft.world.item.crafting.RecipeHolder::value)
+                .toList());
     }
 
     @Override
@@ -100,6 +110,8 @@ public class BrgJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModBlocks.CRYSTAL_FORMER.get(), CrystalFormingCategory.TYPE);
         registration.addRecipeCatalyst(ModBlocks.CRYSTAL_INFUSER.get(), CrystalInfusingCategory.TYPE);
         registration.addRecipeCatalyst(ModBlocks.RESONATOR.get(), CrystalGenerationCategory.TYPE);
+        registration.addRecipeCatalyst(ModBlocks.CRYSTAL_CRUCIBLE.get(), ResonanceInfusionCategory.TYPE);
+        registration.addRecipeCatalyst(ModBlocks.CRYSTAL_CRUCIBLE.get(), CrystalMeltingCategory.TYPE);
     }
 
     private static List<Holder.Reference<CrystalTier>> sortedTiers(RegistryAccess access) {
@@ -170,16 +182,38 @@ public class BrgJeiPlugin implements IModPlugin {
         return recipes;
     }
 
-    /** Output forms an ore actually drops (raw material, gem, or dust) — never an ingot. */
-    private static final List<String> OUTPUT_FAMILIES = List.of("raw_materials", "gems", "dusts");
+    /**
+     * One entry per tier that can hold resonance: every crystal of that tier melts to the same
+     * amount, since the yield comes from the tier's capacity rather than the infused material.
+     */
+    private static List<CrystalMeltingRecipe> melting(RegistryAccess access) {
+        List<CrystalMeltingRecipe> recipes = new ArrayList<>();
+        for (Holder.Reference<CrystalTier> tier : sortedTiers(access)) {
+            if (tier.value().hidden() || tier.value().resonanceCapacity() <= 0) {
+                continue;
+            }
+            List<ItemStack> crystals = new ArrayList<>();
+            for (TagKey<Block> oreTag : oreMaterialTags(access)) {
+                // Shown saturated: the charge component fills the durability bar and puts the exact
+                // "Resonance: n/n" on the tooltip, so the entry looks like a crystal worth melting
+                // rather than a fresh one. The JEI subtype key is tier+resource only, so this doesn't
+                // split entries or stop "show recipes" matching a player's own crystal.
+                ItemStack crystal = CrystalItem.create(tier, new OreTagResource(oreTag));
+                CrystalCharge.set(crystal, tier.value().resonanceCapacity());
+                crystals.add(crystal);
+            }
+            if (crystals.isEmpty()) {
+                continue;
+            }
+            recipes.add(new CrystalMeltingRecipe(List.copyOf(crystals), tier.value().resonanceCapacity()));
+        }
+        return recipes;
+    }
 
-    private static List<CrystalGenerationRecipe> generation(RegistryAccess access) {
-        HolderLookup.RegistryLookup<Item> items = access.lookupOrThrow(Registries.ITEM);
+    /** Every {@code c:ores/<mat>} tag that has at least one non-blacklisted block behind it. */
+    private static List<TagKey<Block>> oreMaterialTags(RegistryAccess access) {
         HolderLookup.RegistryLookup<Block> blocks = access.lookupOrThrow(Registries.BLOCK);
-        List<Holder.Reference<CrystalTier>> tiers = sortedTiers(access);
-
-        List<CrystalGenerationRecipe> recipes = new ArrayList<>();
-        blocks.listTagIds()
+        return blocks.listTagIds()
                 .filter(t -> t.location().getNamespace().equals("c")
                         && t.location().getPath().startsWith("ores/")
                         && !t.location().getPath().substring("ores/".length()).contains("/"))
@@ -187,6 +221,18 @@ public class BrgJeiPlugin implements IModPlugin {
                         .map(set -> set.stream().anyMatch(h -> !Config.isBlacklisted(h)))
                         .orElse(false))
                 .sorted(Comparator.comparing(t -> t.location().toString()))
+                .toList();
+    }
+
+    /** Output forms an ore actually drops (raw material, gem, or dust) — never an ingot. */
+    private static final List<String> OUTPUT_FAMILIES = List.of("raw_materials", "gems", "dusts");
+
+    private static List<CrystalGenerationRecipe> generation(RegistryAccess access) {
+        HolderLookup.RegistryLookup<Item> items = access.lookupOrThrow(Registries.ITEM);
+        List<Holder.Reference<CrystalTier>> tiers = sortedTiers(access);
+
+        List<CrystalGenerationRecipe> recipes = new ArrayList<>();
+        oreMaterialTags(access)
                 .forEach(oreTag -> {
                     String mat = oreTag.location().getPath().substring("ores/".length());
 

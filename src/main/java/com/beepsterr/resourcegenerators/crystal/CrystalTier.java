@@ -17,6 +17,10 @@ import net.minecraft.world.item.crafting.Ingredient;
  * @param catalyst   the tier-defining item the Former consumes (e.g. glass, a diamond)
  * @param hidden     when true, hide this tier from player-facing listings/counts (e.g. Ponder);
  *                   used for testing/creative-only tiers
+ * @param resonanceCapacity how much resonance (in mB) a crystal of this tier can accumulate before it
+ *                   saturates — one resonator work cycle stores 1mB whether or not the crystal
+ *                   generated, so this is both the charge cap and the crystal's full melt value.
+ *                   0 means the tier never accumulates.
  */
 public record CrystalTier(
         int level,
@@ -24,7 +28,8 @@ public record CrystalTier(
         float rollChance,
         Ingredient base,
         Ingredient catalyst,
-        boolean hidden
+        boolean hidden,
+        int resonanceCapacity
 ) {
     /** Codec for a {@code "#RRGGBB"} (or bare {@code RRGGBB}) hex string ↔ packed int. */
     public static final Codec<Integer> HEX_COLOR = Codec.STRING.comapFlatMap(
@@ -45,6 +50,7 @@ public record CrystalTier(
             Codec.FLOAT.optionalFieldOf("roll_chance", 0.05f).forGetter(CrystalTier::rollChance),
             Ingredient.CODEC.fieldOf("base_ingredient").forGetter(CrystalTier::base),
             Ingredient.CODEC.fieldOf("catalyst_ingredient").forGetter(CrystalTier::catalyst),
-            Codec.BOOL.optionalFieldOf("hidden", false).forGetter(CrystalTier::hidden)
+            Codec.BOOL.optionalFieldOf("hidden", false).forGetter(CrystalTier::hidden),
+            Codec.INT.optionalFieldOf("resonance_capacity", 0).forGetter(CrystalTier::resonanceCapacity)
     ).apply(inst, CrystalTier::new));
 }

@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.block;
 
+import com.beepsterr.resourcegenerators.inventory.MachineLayout;
 import com.beepsterr.resourcegenerators.registry.ModMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -39,7 +40,8 @@ public class CrystalInfuserMenu extends AbstractContainerMenu {
         var inv = blockEntity.getInventory();
         addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_MATERIAL, 75, 18));   // input
         addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_CRYSTAL, 75, 60));    // output
-        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_FUEL, 140, 53));      // fuel, bottom-right
+        addSlot(new SlotItemHandler(inv, CrystalInfuserBlockEntity.SLOT_FUEL,
+                MachineLayout.FUEL_SLOT_X, MachineLayout.FUEL_SLOT_Y));   // fuel, shared spot
 
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {

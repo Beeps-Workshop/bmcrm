@@ -1,11 +1,17 @@
 {
     "type": "minecraft:crafting_shaped",
     "category": "misc",
-    "pattern": [ " F ", "CDC", " C " ],
+    "pattern": [
+        "EFE",
+        "IDI",
+        "CCC"
+    ],
     "key": {
         "F": { "item": "minecraft:blast_furnace" },
         "C": { "item": "minecraft:coal_block" },
-        "D": { "item": "bmcrm:modulator_base" }
+        "D": { "item": "bmcrm:modulator_base" },
+        "I": { "item": "minecraft:fire_charge" },
+        "E": { "item": "bmcrm:activated_lapis_lazuli" }
     },
     "result": { "count": 1, "id": "bmcrm:auto_smelt_modulator" }
 }

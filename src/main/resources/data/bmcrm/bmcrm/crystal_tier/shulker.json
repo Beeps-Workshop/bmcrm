@@ -2,6 +2,7 @@
     "level": 5,
     "color": "#A45FC0",
     "roll_chance": 0.20,
-    "base_ingredient": { "item": "minecraft:tinted_glass" },
-    "catalyst_ingredient": { "item": "minecraft:shulker_shell" }
+    "base_ingredient": { "item": "bmcrm:resonating_gem" },
+    "catalyst_ingredient": { "item": "minecraft:shulker_shell" },
+    "resonance_capacity": 4000
 }

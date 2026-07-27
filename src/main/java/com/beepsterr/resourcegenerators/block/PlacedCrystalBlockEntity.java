@@ -1,5 +1,6 @@
 package com.beepsterr.resourcegenerators.block;
 
+import com.beepsterr.resourcegenerators.crystal.CrystalCharge;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
@@ -28,12 +29,15 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
 
     private static final String KEY = "CrystalData";
     private static final String OWNER_KEY = "Owner";
+    private static final String CHARGE_KEY = "Charge";
 
     @Nullable
     private CrystalData data;
     /** Position of the resonator that has claimed this crystal (one crystal → one resonator). */
     @Nullable
     private BlockPos owner;
+    /** Resonance accumulated while placed, in mB; capped by the tier and released by melting. */
+    private int charge;
 
     public PlacedCrystalBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.PLACED_CRYSTAL.get(), pos, state);
@@ -47,6 +51,27 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
     public void setCrystalData(@Nullable CrystalData data) {
         this.data = data;
         setChanged();
+    }
+
+    public int getCharge() {
+        return charge;
+    }
+
+    /**
+     * Store one generation's worth of resonance. Silently does nothing once the crystal is saturated
+     * (or for a tier with no capacity at all), so a long-running crystal stops banking rather than
+     * growing without bound.
+     */
+    public void addCharge(int amount) {
+        if (data == null || amount <= 0) {
+            return;
+        }
+        int capacity = CrystalCharge.capacity(data);
+        int updated = Math.min(capacity, charge + amount);
+        if (updated != charge) {
+            charge = updated;
+            setChanged();
+        }
     }
 
     @Nullable
@@ -77,6 +102,9 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
         if (owner != null) {
             tag.putLong(OWNER_KEY, owner.asLong());
         }
+        if (charge > 0) {
+            tag.putInt(CHARGE_KEY, charge);
+        }
     }
 
     @Override
@@ -88,6 +116,7 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
             this.data = CrystalData.CODEC.parse(ops, tag.get(KEY)).result().orElse(null);
         }
         this.owner = tag.contains(OWNER_KEY) ? BlockPos.of(tag.getLong(OWNER_KEY)) : null;
+        this.charge = tag.getInt(CHARGE_KEY);
     }
 
     // --- Item <-> block data transfer (place & break) ---
@@ -99,6 +128,11 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
         if (applied != null) {
             this.data = applied;
         }
+        Integer storedCharge = input.get(ModDataComponents.CRYSTAL_CHARGE.get());
+        if (storedCharge != null) {
+            // Clamp on the way in: the tier's capacity may have been lowered by a datapack change.
+            this.charge = this.data == null ? 0 : Math.min(storedCharge, CrystalCharge.capacity(this.data));
+        }
     }
 
     @Override
@@ -106,6 +140,9 @@ public class PlacedCrystalBlockEntity extends BlockEntity {
         super.collectImplicitComponents(builder);
         if (data != null) {
             builder.set(ModDataComponents.CRYSTAL_DATA.get(), data);
+        }
+        if (charge > 0) {
+            builder.set(ModDataComponents.CRYSTAL_CHARGE.get(), charge);
         }
     }
 

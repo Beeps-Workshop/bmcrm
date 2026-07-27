@@ -10,14 +10,18 @@ import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
 import com.beepsterr.resourcegenerators.registry.ModBlocks;
 import com.beepsterr.resourcegenerators.registry.ModDataComponents;
+import com.beepsterr.resourcegenerators.registry.ModFluids;
 import com.beepsterr.resourcegenerators.registry.ModItems;
 import com.beepsterr.resourcegenerators.registry.ModMenus;
 import com.beepsterr.resourcegenerators.registry.ModParticles;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -65,6 +69,7 @@ public final class ResourceGeneratorsClient {
         event.registerBlockEntityRenderer(ModBlockEntities.RESONATOR.get(), ResonatorRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.CRYSTAL_INFUSER.get(), CrystalInfuserRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.CRYSTAL_FORMER.get(), CrystalFormerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRYSTAL_CRUCIBLE.get(), CrystalCrucibleRenderer::new);
     }
 
     @SubscribeEvent
@@ -78,13 +83,42 @@ public final class ResourceGeneratorsClient {
         event.register(ResonatorRenderer.RING);
         event.register(ResonatorRenderer.FLUID);
         event.register(CrystalFormerRenderer.FLUID);
+        event.register(CrystalCrucibleRenderer.FLUID);
     }
 
     @SubscribeEvent
     static void onRegisterScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.CRYSTAL_FORMER.get(), CrystalFormerScreen::new);
         event.register(ModMenus.CRYSTAL_INFUSER.get(), CrystalInfuserScreen::new);
+        event.register(ModMenus.CRYSTAL_CRUCIBLE.get(), CrystalCrucibleScreen::new);
         event.register(ModMenus.RESONATOR.get(), ResonatorScreen::new);
+    }
+
+    /**
+     * How Liquid Resonance draws in the world and in tanks. Placeholder art: vanilla's water sprites
+     * tinted to the resonance colour, until the fluid gets textures of its own.
+     */
+    @SubscribeEvent
+    static void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            private static final ResourceLocation STILL = ResourceLocation.withDefaultNamespace("block/water_still");
+            private static final ResourceLocation FLOWING = ResourceLocation.withDefaultNamespace("block/water_flow");
+
+            @Override
+            public ResourceLocation getStillTexture() {
+                return STILL;
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture() {
+                return FLOWING;
+            }
+
+            @Override
+            public int getTintColor() {
+                return ModFluids.RESONANCE_COLOR;
+            }
+        }, ModFluids.LIQUID_RESONANCE_TYPE.get());
     }
 
     @SubscribeEvent

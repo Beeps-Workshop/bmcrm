@@ -4,6 +4,7 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.ResonatorBlockEntity;
 import com.beepsterr.resourcegenerators.block.CrystalFormerBlockEntity;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlockEntity;
+import com.beepsterr.resourcegenerators.block.CrystalCrucibleBlockEntity;
 import com.beepsterr.resourcegenerators.block.ModulatorBlockEntity;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -28,6 +29,11 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<CrystalInfuserBlockEntity>> CRYSTAL_INFUSER =
             REGISTER.register("crystal_infuser", () -> BlockEntityType.Builder
                     .of(CrystalInfuserBlockEntity::new, ModBlocks.CRYSTAL_INFUSER.get())
+                    .build(null));
+
+    public static final Supplier<BlockEntityType<CrystalCrucibleBlockEntity>> CRYSTAL_CRUCIBLE =
+            REGISTER.register("crystal_crucible", () -> BlockEntityType.Builder
+                    .of(CrystalCrucibleBlockEntity::new, ModBlocks.CRYSTAL_CRUCIBLE.get())
                     .build(null));
 
     public static final Supplier<BlockEntityType<PlacedCrystalBlockEntity>> PLACED_CRYSTAL =

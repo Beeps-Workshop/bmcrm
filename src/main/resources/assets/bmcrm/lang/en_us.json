@@ -22,6 +22,21 @@
     "tooltip.bmcrm.uninfused": "Uninfused — needs a Crystal Infuser",
     "tooltip.bmcrm.crystal.blank": "Uninitialised crystal",
 
+    "block.bmcrm.crystal_crucible": "Crystal Crucible",
+    "item.bmcrm.liquid_resonance_bucket": "Liquid Resonance Bucket",
+    "item.bmcrm.activated_lapis_lazuli": "Activated Lapis Lazuli",
+    "item.bmcrm.shining_crystals": "Shining Crystals",
+    "item.bmcrm.pulsing_pearl": "Pulsing Pearl",
+    "item.bmcrm.resonating_gem": "Resonating Gem",
+    "fluid.bmcrm.liquid_resonance": "Liquid Resonance",
+    "block.bmcrm.liquid_resonance": "Liquid Resonance",
+
+    "tooltip.bmcrm.resonance": "Resonance: %1$s/%2$s",
+    "tooltip.bmcrm.tank": "Liquid Resonance: %1$s/%2$s mB",
+
+    "bmcrm.jei.crystal_melting": "Crystal Melting",
+    "bmcrm.jei.crystal_melting.yield": "A saturated crystal yields %s mB",
+
     "block.bmcrm.crystal_infuser": "Crystal Infuser",
     "block.bmcrm.resonator": "Resonator",
     "block.bmcrm.placed_crystal": "Crystal",

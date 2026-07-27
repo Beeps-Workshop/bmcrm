@@ -44,6 +44,8 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     public static final int SLOT_OUTPUT = 2;
     public static final int SLOT_FUEL = 3;
 
+    private static final int SLOT_COUNT = 4;
+
     /** Power supply: solid fuel (furnace-style) or a filled RF/FE buffer. Required to make progress. */
     private final MachineFuel fuel = new MachineFuel();
 
@@ -65,7 +67,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     private int clientColor = -1;
     private long clientSyncGameTime = 0L;
 
-    private final ItemStackHandler inventory = new ItemStackHandler(4) {
+    private final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();

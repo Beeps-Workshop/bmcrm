@@ -1,0 +1,19 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "G G",
+        "SCS",
+        "SBS"
+    ],
+    "key": {
+        "G": { "item": "minecraft:light_weighted_pressure_plate" },
+        "S": { "item": "minecraft:copper_ingot" },
+        "B": { "item": "minecraft:blast_furnace" },
+        "C": { "item": "minecraft:cauldron" }
+    },
+    "result": {
+        "count": 1,
+        "id": "bmcrm:crystal_crucible"
+    }
+}

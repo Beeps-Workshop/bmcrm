@@ -3,6 +3,7 @@ package com.beepsterr.resourcegenerators.client;
 import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserMenu;
 import com.beepsterr.resourcegenerators.client.gui.MachineGauges;
+import com.beepsterr.resourcegenerators.inventory.MachineLayout;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -25,7 +26,7 @@ public class CrystalInfuserScreen extends AbstractContainerScreen<CrystalInfuser
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         guiGraphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
         // Furnace-style flame above the bottom-right fuel slot.
-        MachineGauges.renderFlame(guiGraphics, leftPos + 141, topPos + 37, menu.getScaledFlame(MachineGauges.FLAME_HEIGHT));
+        MachineGauges.renderFlame(guiGraphics, leftPos + MachineLayout.FLAME_X, topPos + MachineLayout.FLAME_Y, menu.getScaledFlame(MachineGauges.FLAME_HEIGHT));
     }
 
     @Override
