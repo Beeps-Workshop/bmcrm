@@ -8,7 +8,7 @@
     ],
     "key": {
         "F": { "item": "minecraft:blast_furnace" },
-        "G": { "item": "minecraft:glass" },
+        "G": { "tag": "c:glass_blocks/cheap" },
         "B": { "item": "minecraft:glass_bottle" },
         "S": { "item": "minecraft:smooth_stone"}
     },

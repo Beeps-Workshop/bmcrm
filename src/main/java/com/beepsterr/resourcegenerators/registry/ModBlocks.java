@@ -4,6 +4,7 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.block.ResonatorBlock;
 import com.beepsterr.resourcegenerators.block.CrystalFormerBlock;
 import com.beepsterr.resourcegenerators.block.CrystalInfuserBlock;
+import com.beepsterr.resourcegenerators.block.CrystalCrucibleBlock;
 import com.beepsterr.resourcegenerators.block.ModulatorBaseBlock;
 import com.beepsterr.resourcegenerators.block.ModulatorBlock;
 import com.beepsterr.resourcegenerators.block.PlacedCrystalBlock;
@@ -31,6 +32,13 @@ public final class ModBlocks {
     public static final DeferredBlock<CrystalInfuserBlock> CRYSTAL_INFUSER =
             REGISTER.registerBlock("crystal_infuser", CrystalInfuserBlock::new,
                     BlockBehaviour.Properties.of().strength(3.5f).noOcclusion());
+
+    public static final DeferredBlock<CrystalCrucibleBlock> CRYSTAL_CRUCIBLE =
+            REGISTER.registerBlock("crystal_crucible", CrystalCrucibleBlock::new,
+                    // The model stops short of a full cube (15px tall), so it must not occlude the
+                    // block above. Only glows while it's actually burning.
+                    BlockBehaviour.Properties.of().strength(3.5f).noOcclusion()
+                            .lightLevel(s -> s.getValue(CrystalCrucibleBlock.LIT) ? 10 : 0));
 
     public static final DeferredBlock<ResonatorBlock> RESONATOR =
             REGISTER.registerBlock("resonator", ResonatorBlock::new,

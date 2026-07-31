@@ -2,6 +2,7 @@
     "level": 3,
     "color": "#5AC8B8",
     "roll_chance": 0.12,
-    "base_ingredient": { "item": "minecraft:tinted_glass" },
-    "catalyst_ingredient": { "item": "minecraft:prismarine_crystals" }
+    "base_ingredient": { "item": "bmcrm:shining_crystals" },
+    "catalyst_ingredient": { "item": "minecraft:sea_lantern" },
+    "resonance_capacity": 1000
 }

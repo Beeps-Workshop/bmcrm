@@ -1,0 +1,11 @@
+{
+    "type": "bmcrm:resonance_infusion",
+    "ingredient": {
+        "item": "minecraft:lapis_lazuli"
+    },
+    "resonance": 25,
+    "result": {
+        "id": "bmcrm:activated_lapis_lazuli",
+        "count": 1
+    }
+}

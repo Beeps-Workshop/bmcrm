@@ -1,0 +1,11 @@
+{
+    "type": "bmcrm:resonance_infusion",
+    "ingredient": {
+        "item": "minecraft:diamond"
+    },
+    "resonance": 1000,
+    "result": {
+        "id": "bmcrm:resonating_gem",
+        "count": 1
+    }
+}

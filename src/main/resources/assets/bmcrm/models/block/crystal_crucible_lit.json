@@ -1,0 +1,6 @@
+{
+    "parent": "bmcrm:block/crystal_crucible",
+    "textures": {
+        "5": "block/blast_furnace_front_on"
+    }
+}

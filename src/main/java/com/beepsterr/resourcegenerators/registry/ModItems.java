@@ -4,7 +4,9 @@ import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
 import com.beepsterr.resourcegenerators.item.TuningForkItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -35,6 +37,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> CRYSTAL_INFUSER =
             REGISTER.registerSimpleBlockItem("crystal_infuser", ModBlocks.CRYSTAL_INFUSER);
 
+    /** BlockItem for the Crystal Crucible. */
+    public static final DeferredItem<BlockItem> CRYSTAL_CRUCIBLE =
+            REGISTER.registerSimpleBlockItem("crystal_crucible", ModBlocks.CRYSTAL_CRUCIBLE);
+
     /** BlockItem for the Resonator. */
     public static final DeferredItem<BlockItem> RESONATOR =
             REGISTER.registerSimpleBlockItem("resonator", ModBlocks.RESONATOR);
@@ -58,4 +64,30 @@ public final class ModItems {
     /** Tuning Fork: a diagnostic wrench that toggles area overlays (see {@link TuningForkItem}). */
     public static final DeferredItem<Item> TUNING_FORK =
             REGISTER.registerItem("tuning_fork", TuningForkItem::new, new Item.Properties().stacksTo(1));
+
+    /**
+     * A bucket of Liquid Resonance. Deliberately a plain {@link BucketItem} — NeoForge only attaches
+     * the fluid-handler capability to items whose class is exactly {@code BucketItem}, and that
+     * capability is what lets other mods' tanks and pipes fill and empty it.
+     */
+    public static final DeferredItem<BucketItem> LIQUID_RESONANCE_BUCKET =
+            REGISTER.registerItem("liquid_resonance_bucket",
+                    props -> new BucketItem(ModFluids.LIQUID_RESONANCE.get(), props),
+                    new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1));
+
+    // Resonant components: ordinary materials steeped in Liquid Resonance by the Crucible. They are
+    // plain crafting ingredients — the resonance cost is baked into the item, so the machines that
+    // use them need no plumbing of their own. What each costs lives in its infusion recipe JSON.
+
+    public static final DeferredItem<Item> ACTIVATED_LAPIS_LAZULI =
+            REGISTER.registerSimpleItem("activated_lapis_lazuli");
+
+    public static final DeferredItem<Item> SHINING_CRYSTALS =
+            REGISTER.registerSimpleItem("shining_crystals");
+
+    public static final DeferredItem<Item> PULSING_PEARL =
+            REGISTER.registerSimpleItem("pulsing_pearl");
+
+    public static final DeferredItem<Item> RESONATING_GEM =
+            REGISTER.registerSimpleItem("resonating_gem");
 }

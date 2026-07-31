@@ -1,10 +1,14 @@
 {
     "type": "minecraft:crafting_shaped",
     "category": "misc",
-    "pattern": [ "LKL", "EDE", "LEL" ],
+    "pattern": [
+        "LKL",
+        "EDE",
+        "LEL"
+    ],
     "key": {
-        "L": { "item": "minecraft:lapis_lazuli" },
-        "E": { "item": "minecraft:emerald" },
+        "L": { "item": "bmcrm:shining_crystals" },
+        "E": { "item": "minecraft:emerald_block" },
         "D": { "item": "bmcrm:modulator_base" },
         "K": { "type": "neoforge:components", "items": "minecraft:enchanted_book",
                "components": { "minecraft:stored_enchantments": { "levels": { "minecraft:fortune": 3 } } } }

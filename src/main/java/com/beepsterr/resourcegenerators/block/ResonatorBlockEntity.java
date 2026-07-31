@@ -284,6 +284,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             }
             pulse.schedulePling(tickCounter, center, p); // reaches this crystal after a distance-based delay
 
+            // Resonance is banked for being resonated at all, not for getting a drop out of it — so a
+            // crystal's fluid yield tracks uptime rather than luck, and an unlucky streak isn't
+            // punished twice. Stops accruing once the crystal saturates.
+            crystal.addCharge(1);
+
             float rollChance = data.tier().value().rollChance();
             if (weatherPenalty && (resonatorRained || level.isRainingAt(p))) {
                 rollChance *= (float) rainEfficiency;

@@ -4,6 +4,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
 import com.beepsterr.resourcegenerators.crystal.OreTagResource;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
+import com.beepsterr.resourcegenerators.registry.ModBlocks;
 import com.beepsterr.resourcegenerators.registry.ModItems;
 import com.beepsterr.resourcegenerators.registry.ModRegistries;
 import net.createmod.catnip.math.Pointing;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 
 import java.util.Comparator;
 import java.util.List;
@@ -49,6 +51,191 @@ public final class BrgPonderScenes {
 
     private static BlockPos pos(SceneBuildingUtil util, int[] p) {
         return util.grid().at(p[0], p[1], p[2]);
+    }
+
+    /**
+     * The closing beat every fuelled machine scene ends on: it needs fuel or RF to do anything.
+     * Shows coal going in, then the shared line named for the machine in question.
+     *
+     * <p>Not for the Resonator — that one runs on nothing.
+     */
+    public static void machineNeedsPower(SceneBuilder scene, SceneBuildingUtil util, BlockPos machine, Block block) {
+        scene.overlay().showControls(util.vector().topOf(machine), Pointing.DOWN, 50)
+                .rightClick().withItem(new ItemStack(Items.COAL));
+        scene.idle(10);
+        scene.overlay().showText(100)
+                .attachKeyFrame()
+                .sharedText("machine_power", block.getName().getString())
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(machine, Direction.WEST));
+        scene.idle(110);
+    }
+
+    // --- machine/*.nbt layouts: 5x5x5, floor at y0, machine at y1 ---
+    private static final int[] FORMER = {2, 1, 2};
+    private static final int[] INFUSER = {2, 1, 2};
+    private static final int[] CRUCIBLE = {2, 1, 3};
+    private static final int[] CRUCIBLE_RESONATOR = {3, 1, 1};
+    private static final int[] CRUCIBLE_CRYSTAL = {1, 1, 1};
+
+    /** Common opening for the one-machine scenes: small plate, floor, then the machine itself. */
+    private static void openMachineScene(SceneBuilder scene, SceneBuildingUtil util, String id, String title) {
+        scene.title(id, title);
+        scene.configureBasePlate(0, 0, 5);
+        scene.scaleSceneView(0.9f);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
+        scene.idle(10);
+    }
+
+    /** The Crystal Former: sand + glass in, a blank crystal out. */
+    public static void machineFormer(SceneBuilder scene, SceneBuildingUtil util) {
+        openMachineScene(scene, util, "machine_former", "The Crystal Former");
+        BlockPos former = pos(util, FORMER);
+        scene.world().showSection(util.select().position(former), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("The Crystal Former is used to create blank crystals")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(former, Direction.WEST));
+        scene.idle(80);
+
+        scene.overlay().showControls(util.vector().topOf(former), Pointing.DOWN, 40)
+                .rightClick().withItem(new ItemStack(Items.SAND));
+        scene.idle(50);
+        scene.overlay().showControls(util.vector().topOf(former), Pointing.DOWN, 40)
+                .rightClick().withItem(new ItemStack(Items.GLASS));
+        scene.idle(50);
+
+        scene.overlay().showText(70)
+                .attachKeyFrame()
+                .text("It takes a while to form a crystal...")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(former));
+        scene.idle(80);
+
+        // The finished crystal, in its real tint, hovering above the machine.
+        List<Holder.Reference<CrystalTier>> tiers = tiers();
+        if (!tiers.isEmpty()) {
+            scene.world().createItemEntity(util.vector().centerOf(former.above()),
+                    util.vector().of(0, 0.05, 0), CrystalItem.createBlank(tiers.get(0)));
+            scene.idle(15);
+        }
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("When it's done, you can take the crystal and start Infusing it at the Crystal Infuser")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(former));
+        scene.idle(100);
+
+        machineNeedsPower(scene, util, former, ModBlocks.CRYSTAL_FORMER.get());
+        scene.markAsFinished();
+    }
+
+    /** The Crystal Infuser: 32 units of one material attunes a blank crystal, permanently. */
+    public static void machineInfuser(SceneBuilder scene, SceneBuildingUtil util) {
+        openMachineScene(scene, util, "machine_infuser", "The Crystal Infuser");
+        BlockPos infuser = pos(util, INFUSER);
+        scene.world().showSection(util.select().position(infuser), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay().showText(80)
+                .attachKeyFrame()
+                .text("The crystal infuser turns your blank crystals into usable crystals")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(infuser, Direction.WEST));
+        scene.idle(90);
+
+        scene.overlay().showControls(util.vector().topOf(infuser), Pointing.DOWN, 40)
+                .rightClick().withItem(new ItemStack(Items.COPPER_INGOT));
+        scene.idle(20);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("You'll need to infuse 32 of any resource into the crystal to attune it to that resource")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(infuser));
+        scene.idle(100);
+
+        List<Holder.Reference<CrystalTier>> tiers = tiers();
+        if (!tiers.isEmpty()) {
+            TagKey<net.minecraft.world.level.block.Block> copper = TagKey.create(Registries.BLOCK,
+                    ResourceLocation.fromNamespaceAndPath("c", "ores/copper"));
+            scene.world().createItemEntity(util.vector().centerOf(infuser.above()),
+                    util.vector().of(0, 0.05, 0),
+                    CrystalItem.create(tiers.get(0), new OreTagResource(copper)));
+            scene.idle(15);
+        }
+        scene.overlay().showText(100)
+                .attachKeyFrame()
+                .text("It is not possible to change the resource afterwards, or to mix different resources")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(infuser));
+        scene.idle(110);
+
+        machineNeedsPower(scene, util, infuser, ModBlocks.CRYSTAL_INFUSER.get());
+        scene.markAsFinished();
+    }
+
+    /** The Crystal Crucible: crystals bank resonance, and melting them down releases it. */
+    public static void machineCrucible(SceneBuilder scene, SceneBuildingUtil util) {
+        openMachineScene(scene, util, "machine_crucible", "The Crystal Crucible");
+        BlockPos resonator = pos(util, CRUCIBLE_RESONATOR);
+        BlockPos crystal = pos(util, CRUCIBLE_CRYSTAL);
+        BlockPos crucible = pos(util, CRUCIBLE);
+
+        // Open on the pair that produces resonance in the first place.
+        Selection pair = util.select().position(resonator).add(util.select().position(crystal));
+        scene.world().showSection(pair, Direction.DOWN);
+        scene.idle(15);
+        scene.overlay().showOutline(PonderPalette.OUTPUT, "charging", util.select().position(crystal), 80);
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("Whenever a Resonator interacts with a crystal, the crystal gains Liquid Resonance")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(crystal));
+        scene.idle(100);
+
+        // Clear them away so the crucible has the stage to itself.
+        scene.world().hideSection(pair, Direction.UP);
+        scene.idle(20);
+        scene.world().showSection(util.select().position(crucible), Direction.DOWN);
+        scene.idle(15);
+
+        List<Holder.Reference<CrystalTier>> tiers = tiers();
+        if (!tiers.isEmpty()) {
+            scene.overlay().showControls(util.vector().topOf(crucible), Pointing.DOWN, 40)
+                    .rightClick().withItem(CrystalItem.createBlank(tiers.get(0)));
+            scene.idle(20);
+        }
+        scene.overlay().showText(100)
+                .attachKeyFrame()
+                .text("The Crystal Crucible can be used to melt down crystals, harvesting the Liquid Resonance stored inside")
+                .placeNearTarget()
+                .pointAt(util.vector().blockSurface(crucible, Direction.WEST));
+        scene.idle(110);
+
+        scene.overlay().showText(90)
+                .attachKeyFrame()
+                .text("Melting a crystal destroys it, so only melt one once it has soaked up all it can hold")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(crucible));
+        scene.idle(100);
+
+        scene.overlay().showControls(util.vector().topOf(crucible), Pointing.DOWN, 40)
+                .withItem(new ItemStack(ModItems.LIQUID_RESONANCE_BUCKET.get()));
+        scene.idle(20);
+        scene.overlay().showText(100)
+                .attachKeyFrame()
+                .text("Liquid resonance can be used to create new materials and better crystals")
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(crucible));
+        scene.idle(110);
+
+        machineNeedsPower(scene, util, crucible, ModBlocks.CRYSTAL_CRUCIBLE.get());
+        scene.markAsFinished();
     }
 
     /** Scene 1: how the Resonator works — interaction, dissonance, multiple crystals, the Tuning Fork. */
@@ -459,7 +646,8 @@ public final class BrgPonderScenes {
             scene.world().createItemEntity(at, util.vector().of(0, 0, 0), CrystalItem.createBlank(tier));
             int percent = Math.round(tier.value().rollChance() * 100);
             scene.overlay().showText(90)
-                    .sharedText("tier_label", CrystalItem.tierName(tier).getString(), percent)
+                    .sharedText("tier_label", CrystalItem.tierName(tier).getString(), percent,
+                            tier.value().resonanceCapacity())
                     .placeNearTarget()
                     .pointAt(at);
             scene.idle(10);
@@ -468,7 +656,7 @@ public final class BrgPonderScenes {
 
         scene.overlay().showText(80)
                 .attachKeyFrame()
-                .text("The blank crystal determines how likely the crystal is to resonate")
+                .text("The blank crystal sets how often it resonates, and how much resonance it can hold")
                 .placeNearTarget()
                 .pointAt(util.vector().topOf(util.grid().at(7, 1, 7)));
         scene.idle(90);

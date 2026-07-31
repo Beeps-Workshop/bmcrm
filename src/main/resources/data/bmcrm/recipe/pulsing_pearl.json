@@ -1,0 +1,11 @@
+{
+    "type": "bmcrm:resonance_infusion",
+    "ingredient": {
+        "item": "minecraft:ender_pearl"
+    },
+    "resonance": 250,
+    "result": {
+        "id": "bmcrm:pulsing_pearl",
+        "count": 1
+    }
+}

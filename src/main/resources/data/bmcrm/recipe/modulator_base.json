@@ -9,7 +9,7 @@
     "key": {
         "S": { "item": "minecraft:smooth_stone" },
         "I": { "item": "minecraft:iron_ingot" },
-        "A": { "item": "minecraft:amethyst_shard" }
+        "A": { "item": "bmcrm:activated_lapis_lazuli" }
     },
     "result": { "count": 1, "id": "bmcrm:modulator_base" }
 }

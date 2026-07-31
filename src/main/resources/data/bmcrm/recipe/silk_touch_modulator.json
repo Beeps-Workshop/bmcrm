@@ -4,7 +4,7 @@
     "pattern": [ "WKW", "SDS", "WSW" ],
     "key": {
         "W": { "item": "minecraft:white_wool" },
-        "S": { "item": "minecraft:string" },
+        "S": { "item": "bmcrm:shining_crystals" },
         "D": { "item": "bmcrm:modulator_base" },
         "K": { "type": "neoforge:components", "items": "minecraft:enchanted_book",
                "components": { "minecraft:stored_enchantments": { "levels": { "minecraft:silk_touch": 1 } } } }

@@ -92,6 +92,10 @@ public class PlacedCrystalBlock extends FaceAttachedBlock implements EntityBlock
         if (level.getBlockEntity(pos) instanceof PlacedCrystalBlockEntity be && be.getCrystalData() != null) {
             ItemStack stack = new ItemStack(ModItems.CRYSTAL.get());
             stack.set(ModDataComponents.CRYSTAL_DATA.get(), be.getCrystalData());
+            // Banked resonance comes along too, so a picked crystal is the same crystal.
+            if (be.getCharge() > 0) {
+                stack.set(ModDataComponents.CRYSTAL_CHARGE.get(), be.getCharge());
+            }
             return stack;
         }
         return super.getCloneItemStack(level, pos, state);

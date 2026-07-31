@@ -39,11 +39,17 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.RESONATOR.get());
                 output.accept(ModItems.CRYSTAL_FORMER.get());
                 output.accept(ModItems.CRYSTAL_INFUSER.get());
+                output.accept(ModItems.CRYSTAL_CRUCIBLE.get());
                 output.accept(ModItems.MODULATOR_BASE.get());
                 output.accept(ModItems.SILK_TOUCH_MODULATOR.get());
                 output.accept(ModItems.FORTUNE_MODULATOR.get());
                 output.accept(ModItems.AUTO_SMELT_MODULATOR.get());
                 output.accept(ModItems.TUNING_FORK.get());
+                output.accept(ModItems.LIQUID_RESONANCE_BUCKET.get());
+                output.accept(ModItems.ACTIVATED_LAPIS_LAZULI.get());
+                output.accept(ModItems.SHINING_CRYSTALS.get());
+                output.accept(ModItems.PULSING_PEARL.get());
+                output.accept(ModItems.RESONATING_GEM.get());
 
                 var tiersOpt = params.holders().lookup(ModRegistries.CRYSTAL_TIER_KEY);
                 var blocksOpt = params.holders().lookup(Registries.BLOCK);

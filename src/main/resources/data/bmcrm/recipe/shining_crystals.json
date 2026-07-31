@@ -1,0 +1,11 @@
+{
+    "type": "bmcrm:resonance_infusion",
+    "ingredient": {
+        "item": "minecraft:prismarine_crystals"
+    },
+    "resonance": 100,
+    "result": {
+        "id": "bmcrm:shining_crystals",
+        "count": 1
+    }
+}

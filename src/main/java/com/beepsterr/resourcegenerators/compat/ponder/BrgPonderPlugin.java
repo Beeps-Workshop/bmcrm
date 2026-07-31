@@ -33,12 +33,14 @@ public class BrgPonderPlugin implements PonderPlugin {
                 .addToIndex()
                 .item(ModItems.CRYSTAL_FORMER.get(), true, true)
                 .title("Creating Crystals")
-                .description("Forming blank crystals and infusing them with a resource")
+                .description("Forming blank crystals, infusing them with a resource, and melting them down")
                 .register();
         helper.addToTag(CREATING_CRYSTALS)
                 .add(ModItems.CRYSTAL.getId())
                 .add(ModItems.CRYSTAL_FORMER.getId())
-                .add(ModItems.CRYSTAL_INFUSER.getId());
+                .add(ModItems.CRYSTAL_INFUSER.getId())
+                .add(ModItems.CRYSTAL_CRUCIBLE.getId())
+                .add(ModItems.LIQUID_RESONANCE_BUCKET.getId());
 
         helper.registerTag(USING_CRYSTALS)
                 .addToIndex()
@@ -56,8 +58,13 @@ public class BrgPonderPlugin implements PonderPlugin {
 
     @Override
     public void registerSharedText(SharedTextRegistrationHelper helper) {
-        // Reusable label template so a per-tier "<Tier> (X% Chance)" line needs one lang key, not N.
-        helper.registerSharedText("tier_label", "%s (%s%% Chance)");
+        // Reusable label template so a per-tier line needs one lang key, not N. Covers both stats a
+        // tier decides: how often it generates, and how much resonance it can bank before saturating.
+        helper.registerSharedText("tier_label", "%s (%s%% Chance, holds %s mB)");
+        // Every fuelled machine closes on the same beat, so the line lives in one place. The
+        // Resonator is deliberately not one of them — it needs no power at all.
+        helper.registerSharedText("machine_power",
+                "The %s requires energy to operate. It can be provided with fuel, or supplied via RF");
     }
 
     @Override
@@ -79,16 +86,20 @@ public class BrgPonderPlugin implements PonderPlugin {
         helper.addStoryBoard(ModBlocks.AUTO_SMELT_MODULATOR.getId(), "modulator/auto_smelt",
                 BrgPonderScenes::modulatorAutoSmelt).highlightAllTags();
 
-        // Crystal-creation tutorial (2 pages), but each machine opens on its own step.
-        // Crystal item + Former: forming first, then infusing.
-        helper.forComponents(ModItems.CRYSTAL.getId(), ModBlocks.CRYSTAL_FORMER.getId())
+        // Each machine owns one scene, on its own 5x5x5 build.
+        helper.addStoryBoard(ModBlocks.CRYSTAL_FORMER.getId(), "machine/crystal_former",
+                BrgPonderScenes::machineFormer).highlightAllTags();
+        helper.addStoryBoard(ModBlocks.CRYSTAL_INFUSER.getId(), "machine/crystal_infuser",
+                BrgPonderScenes::machineInfuser).highlightAllTags();
+        helper.addStoryBoard(ModBlocks.CRYSTAL_CRUCIBLE.getId(), "machine/crystal_crucible",
+                BrgPonderScenes::machineCrucible).highlightAllTags();
+
+        // The crystal item keeps the overview of its own life — the tier table and what infusing
+        // means — since that spans machines rather than belonging to any one of them.
+        helper.forComponents(ModItems.CRYSTAL.getId())
                 .addStoryBoard("crystal/former_infuser", BrgPonderScenes::crystalBlank,
                         e -> e.highlightAllTags())
                 .addStoryBoard("crystal/former_infuser", BrgPonderScenes::crystalInfusing,
                         e -> e.highlightAllTags());
-        // Infuser: infusing first, then forming.
-        ResourceLocation infuser = ModBlocks.CRYSTAL_INFUSER.getId();
-        helper.addStoryBoard(infuser, "crystal/former_infuser", BrgPonderScenes::crystalInfusing).highlightAllTags();
-        helper.addStoryBoard(infuser, "crystal/former_infuser", BrgPonderScenes::crystalBlank).highlightAllTags();
     }
 }
