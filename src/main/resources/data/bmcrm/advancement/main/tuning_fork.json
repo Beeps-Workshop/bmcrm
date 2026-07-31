@@ -1,0 +1,21 @@
+{
+    "parent": "bmcrm:main/resonator",
+    "display": {
+        "icon": { "id": "bmcrm:tuning_fork" },
+        "title": { "translate": "advancements.bmcrm.tuning_fork.title" },
+        "description": { "translate": "advancements.bmcrm.tuning_fork.description" },
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_tuning_fork": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": [ "bmcrm:tuning_fork" ] } ]
+            }
+        }
+    },
+    "requirements": [ [ "has_tuning_fork" ] ]
+}

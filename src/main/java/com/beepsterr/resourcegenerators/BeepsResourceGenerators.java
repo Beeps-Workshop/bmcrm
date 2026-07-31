@@ -12,6 +12,7 @@ import com.beepsterr.resourcegenerators.registry.ModMenus;
 import com.beepsterr.resourcegenerators.registry.ModParticles;
 import com.beepsterr.resourcegenerators.registry.ModRecipes;
 import com.beepsterr.resourcegenerators.registry.ModRegistries;
+import com.beepsterr.resourcegenerators.registry.ModTriggers;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -55,6 +56,7 @@ public class BeepsResourceGenerators {
         ModParticles.REGISTER.register(modEventBus);
         ModRecipes.TYPES.register(modEventBus);
         ModRecipes.SERIALIZERS.register(modEventBus);
+        ModTriggers.REGISTER.register(modEventBus);
 
         // Capabilities (item handler for automation).
         modEventBus.addListener(ModCapabilities::register);

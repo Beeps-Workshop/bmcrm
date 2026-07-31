@@ -109,5 +109,29 @@
     "bmcrm.ponder.crystal_infusing.header": "Infusing Crystals",
     "bmcrm.ponder.crystal_infusing.text_1": "A Blank crystal doesn't do anything on its own, it needs to be infused",
     "bmcrm.ponder.crystal_infusing.text_2": "Many materials can be infused into crystals",
-    "bmcrm.ponder.crystal_infusing.text_3": "You cannot infuse a crystal with multiple materials"
+    "bmcrm.ponder.crystal_infusing.text_3": "You cannot infuse a crystal with multiple materials",
+
+    "advancements.bmcrm.root.title": "The first of Many",
+    "advancements.bmcrm.root.description": "Use the Former to create your first crystal.",
+
+    "advancements.bmcrm.resonator.title": "Spinny Thing",
+    "advancements.bmcrm.resonator.description": "Obtain a Resonator.",
+
+    "advancements.bmcrm.tuning_fork.title": "Tuna Fork",
+    "advancements.bmcrm.tuning_fork.description": "Cause you can't fork a tuna!",
+
+    "advancements.bmcrm.resonance_cascade.title": "Resonance Cascade",
+    "advancements.bmcrm.resonance_cascade.description": "Observe the chimes of 15 crystals resonating at once.",
+
+    "advancements.bmcrm.crucible.title": "Not a Cauldron",
+    "advancements.bmcrm.crucible.description": "Obtain a Crystal Crucible.",
+
+    "advancements.bmcrm.liquid_potential.title": "Liquid Potential",
+    "advancements.bmcrm.liquid_potential.description": "Liquid Resonance lets you create better crystals.",
+
+    "advancements.bmcrm.modulator.title": "See you later, Modulator",
+    "advancements.bmcrm.modulator.description": "Obtain any modulator.",
+
+    "advancements.bmcrm.spatial_puzzle.title": "Spatial Puzzle",
+    "advancements.bmcrm.spatial_puzzle.description": "Observe 10 modulators activating at the same time."
 }

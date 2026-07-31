@@ -1,0 +1,29 @@
+{
+    "parent": "bmcrm:main/root",
+    "display": {
+        "icon": { "id": "bmcrm:resonator" },
+        "title": { "translate": "advancements.bmcrm.resonator.title" },
+        "description": { "translate": "advancements.bmcrm.resonator.description" },
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_resonator": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": [ "bmcrm:resonator" ] } ]
+            }
+        },
+        "placed_resonator": {
+            "trigger": "minecraft:placed_block",
+            "conditions": {
+                "location": [
+                    { "condition": "minecraft:block_state_property", "block": "bmcrm:resonator" }
+                ]
+            }
+        }
+    },
+    "requirements": [ [ "has_resonator", "placed_resonator" ] ]
+}

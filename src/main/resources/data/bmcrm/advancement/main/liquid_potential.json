@@ -1,0 +1,27 @@
+{
+    "parent": "bmcrm:main/crucible",
+    "display": {
+        "icon": { "id": "bmcrm:liquid_resonance_bucket" },
+        "title": { "translate": "advancements.bmcrm.liquid_potential.title" },
+        "description": { "translate": "advancements.bmcrm.liquid_potential.description" },
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_infused_component": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": "#bmcrm:resonance_infused" } ]
+            }
+        },
+        "has_bucket": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": [ "bmcrm:liquid_resonance_bucket" ] } ]
+            }
+        }
+    },
+    "requirements": [ [ "has_infused_component", "has_bucket" ] ]
+}

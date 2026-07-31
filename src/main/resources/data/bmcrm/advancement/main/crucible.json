@@ -1,0 +1,21 @@
+{
+    "parent": "bmcrm:main/resonator",
+    "display": {
+        "icon": { "id": "bmcrm:crystal_crucible" },
+        "title": { "translate": "advancements.bmcrm.crucible.title" },
+        "description": { "translate": "advancements.bmcrm.crucible.description" },
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_crucible": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": [ "bmcrm:crystal_crucible" ] } ]
+            }
+        }
+    },
+    "requirements": [ [ "has_crucible" ] ]
+}

@@ -1,0 +1,8 @@
+{
+    "replace": false,
+    "values": [
+        "bmcrm:silk_touch_modulator",
+        "bmcrm:fortune_modulator",
+        "bmcrm:auto_smelt_modulator"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "replace": false,
+    "values": [
+        "bmcrm:activated_lapis_lazuli",
+        "bmcrm:shining_crystals",
+        "bmcrm:pulsing_pearl",
+        "bmcrm:resonating_gem"
+    ]
+}
