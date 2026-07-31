@@ -1,0 +1,21 @@
+{
+    "parent": "bmcrm:main/liquid_potential",
+    "display": {
+        "icon": { "id": "bmcrm:fortune_modulator" },
+        "title": { "translate": "advancements.bmcrm.modulator.title" },
+        "description": { "translate": "advancements.bmcrm.modulator.description" },
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_modulator": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": "#bmcrm:modulators" } ]
+            }
+        }
+    },
+    "requirements": [ [ "has_modulator" ] ]
+}

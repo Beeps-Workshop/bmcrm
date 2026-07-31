@@ -7,6 +7,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.Modulation;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
+import com.beepsterr.resourcegenerators.registry.ModTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -20,6 +21,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -70,6 +72,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
     private static final int RADIUS_DOWN = 2;
     private static final int RESCAN_INTERVAL = 200;
     private static final int MAX_CRYSTALS = 512;
+    /** How close a player must be to a working resonator to be offered its advancement trigger. */
+    private static final int PLAYER_AWARD_RADIUS = 8;
 
     /** Whether AlmostUnified is present — gates loading the compat class (soft dependency). */
     private static final boolean ALMOST_UNIFIED = net.neoforged.fml.ModList.get().isLoaded("almostunified");
@@ -176,6 +180,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                     be.workProgress = 0;
                     be.lastCycleGameTime = serverLevel.getGameTime();
                     be.doWork(serverLevel, pos);
+                    be.awardNearbyPlayers(serverLevel, pos);
                     fired = true;
                 }
             }
@@ -189,6 +194,19 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
 
             // Drain any scheduled resonance-pulse effects whose moment has arrived.
             be.pulse.tick(serverLevel, be.tickCounter, pos);
+        }
+    }
+
+    /**
+     * Offer the resonance-scale advancement trigger to every player watching this resonator work.
+     * Fired per cycle rather than per rescan so the counts always describe a machine that is actually
+     * running — a resonator with modulators but no crystals never reaches a cycle at all.
+     */
+    private void awardNearbyPlayers(ServerLevel level, BlockPos center) {
+        Vec3 middle = Vec3.atCenterOf(center);
+        double reachSqr = (double) PLAYER_AWARD_RADIUS * PLAYER_AWARD_RADIUS;
+        for (ServerPlayer player : level.getPlayers(p -> p.distanceToSqr(middle) <= reachSqr)) {
+            ModTriggers.RESONATOR_NEARBY.get().trigger(player, cachedPositions.size(), cachedModulators.size());
         }
     }
 

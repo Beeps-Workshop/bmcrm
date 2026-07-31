@@ -1,0 +1,21 @@
+{
+    "display": {
+        "icon": { "id": "bmcrm:crystal" },
+        "title": { "translate": "advancements.bmcrm.root.title" },
+        "description": { "translate": "advancements.bmcrm.root.description" },
+        "background": "minecraft:textures/block/smooth_stone.png",
+        "frame": "task",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "has_crystal": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [ { "items": [ "bmcrm:crystal" ] } ]
+            }
+        }
+    },
+    "requirements": [ [ "has_crystal" ] ]
+}

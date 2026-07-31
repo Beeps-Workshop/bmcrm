@@ -1,0 +1,19 @@
+{
+    "parent": "bmcrm:main/resonator",
+    "display": {
+        "icon": { "id": "bmcrm:resonating_gem" },
+        "title": { "translate": "advancements.bmcrm.resonance_cascade.title" },
+        "description": { "translate": "advancements.bmcrm.resonance_cascade.description" },
+        "frame": "challenge",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "resonating_many_crystals": {
+            "trigger": "bmcrm:resonator_nearby",
+            "conditions": { "min_crystals": 15 }
+        }
+    },
+    "requirements": [ [ "resonating_many_crystals" ] ]
+}

@@ -1,0 +1,19 @@
+{
+    "parent": "bmcrm:main/modulator",
+    "display": {
+        "icon": { "id": "bmcrm:silk_touch_modulator" },
+        "title": { "translate": "advancements.bmcrm.spatial_puzzle.title" },
+        "description": { "translate": "advancements.bmcrm.spatial_puzzle.description" },
+        "frame": "challenge",
+        "show_toast": true,
+        "announce_to_chat": true,
+        "hidden": false
+    },
+    "criteria": {
+        "resonating_with_modulators": {
+            "trigger": "bmcrm:resonator_nearby",
+            "conditions": { "min_modulators": 10 }
+        }
+    },
+    "requirements": [ [ "resonating_with_modulators" ] ]
+}
