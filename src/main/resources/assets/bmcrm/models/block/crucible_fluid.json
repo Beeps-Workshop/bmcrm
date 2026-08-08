@@ -24,6 +24,7 @@
                         13,
                         9
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 },
                 "south": {
@@ -33,6 +34,7 @@
                         13,
                         9
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 },
                 "east": {
@@ -42,6 +44,7 @@
                         13,
                         9
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 },
                 "west": {
@@ -51,6 +54,7 @@
                         13,
                         9
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 },
                 "up": {
@@ -60,6 +64,7 @@
                         13,
                         13
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 },
                 "down": {
@@ -69,6 +74,7 @@
                         13,
                         13
                     ],
+                    "tintindex": 0,
                     "texture": "#0"
                 }
             }
