@@ -24,6 +24,19 @@ public final class Config {
                     List.of("minecraft:nether_gold_ore"),
                     o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
 
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> MOB_CRYSTAL_BLACKLIST = BUILDER
+            .comment("Entity ids that are never offered as mob crystals. Bosses by default — a wither",
+                    "crystal would print nether stars. Mobs that simply drop nothing are excluded",
+                    "separately, via the bmcrm:no_drops entity type tag.")
+            .defineListAllowEmpty("mobCrystalBlacklist",
+                    List.of("minecraft:wither", "minecraft:warden", "minecraft:ender_dragon"),
+                    o -> o instanceof String s && ResourceLocation.tryParse(s) != null);
+
+    public static final ModConfigSpec.IntValue MOB_CRYSTAL_KILLS = BUILDER
+            .comment("Mobs you must kill with a blank crystal in your off hand to attune it to them.",
+                    "Draining a spawner attunes a crystal outright and ignores this.")
+            .defineInRange("mobCrystalKills", 16, 1, 1000);
+
     public static final ModConfigSpec.DoubleValue RAIN_EFFICIENCY = BUILDER
             .comment("Roll-chance multiplier for a crystal exposed to rain (or whose resonator is rained on).",
                     "1.0 disables the penalty entirely; 0.5 halves the effective roll chance.")
@@ -64,6 +77,10 @@ public final class Config {
 
     public static boolean isBlacklisted(ResourceLocation blockId) {
         return blockId != null && BLACKLISTED_ORES.get().contains(blockId.toString());
+    }
+
+    public static boolean isMobBlacklisted(ResourceLocation entityId) {
+        return entityId != null && MOB_CRYSTAL_BLACKLIST.get().contains(entityId.toString());
     }
 
     public static boolean isBlacklisted(Holder<Block> block) {

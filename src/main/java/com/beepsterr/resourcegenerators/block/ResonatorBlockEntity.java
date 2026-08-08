@@ -318,11 +318,6 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
                 continue; // this crystal didn't generate this cycle
             }
             CrystalResource resource = data.resource().get();
-            Optional<Holder<Block>> picked = resource.pickBlock(registries, random);
-            if (picked.isEmpty()) {
-                continue;
-            }
-            Block block = picked.get().value();
 
             // Silk Touch wins if present (-> ore block); otherwise Fortune stacks (level = overlaps).
             ItemStack tool = plainTool;
@@ -342,14 +337,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider, A
             // Auto-smelt if the crystal's beam to the resonator passes through an Auto-Smelt modulator.
             boolean autoSmelt = beamHitsAutoSmelt(p, center);
 
-            LootTable table = server.reloadableRegistries().getLootTable(block.getLootTable());
-            LootParams params = new LootParams.Builder(level)
-                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(center))
-                    .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
-                    .withParameter(LootContextParams.TOOL, tool)
-                    .create(LootContextParamSets.BLOCK);
-
-            List<ItemStack> drops = table.getRandomItems(params);
+            List<ItemStack> drops = resource.roll(level, center, tool, random);
             if (drops.isEmpty()) {
                 continue;
             }

@@ -6,6 +6,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalCharge;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.EntityResource;
 import com.beepsterr.resourcegenerators.crystal.OreTagResource;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
 import com.beepsterr.resourcegenerators.registry.ModBlocks;
@@ -29,7 +30,9 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
@@ -82,6 +85,7 @@ public class BrgJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new CrystalFormingCategory(guiHelper),
                 new CrystalInfusingCategory(guiHelper),
+                new CrystalAttunementCategory(guiHelper),
                 new CrystalGenerationCategory(guiHelper),
                 new ResonanceInfusionCategory(guiHelper),
                 new CrystalMeltingCategory(guiHelper));
@@ -96,6 +100,7 @@ public class BrgJeiPlugin implements IModPlugin {
         RegistryAccess access = mc.level.registryAccess();
         registration.addRecipes(CrystalFormingCategory.TYPE, forming(access));
         registration.addRecipes(CrystalInfusingCategory.TYPE, infusing(access));
+        registration.addRecipes(CrystalAttunementCategory.TYPE, attunement(access));
         registration.addRecipes(CrystalGenerationCategory.TYPE, generation(access));
         registration.addRecipes(CrystalMeltingCategory.TYPE, melting(access));
         // Crucible infusions come from the recipe manager — they're real datapack recipes.
@@ -178,6 +183,33 @@ public class BrgJeiPlugin implements IModPlugin {
                 results.add(CrystalItem.create(tier, resource));
             }
             recipes.add(new CrystalInfusingRecipe(List.copyOf(inputs), blanks, results));
+        }
+        return recipes;
+    }
+
+    /**
+     * One entry per attunable mob. The mob is shown as its spawn egg — the only client-side item
+     * standing for an entity type — so mobs without one (bosses, and anything a mod forgets) are
+     * skipped here; they still appear in the creative tab.
+     */
+    private static List<CrystalAttunementRecipe> attunement(RegistryAccess access) {
+        List<Holder.Reference<CrystalTier>> tiers = sortedTiers(access);
+        int kills = Config.MOB_CRYSTAL_KILLS.get();
+
+        List<CrystalAttunementRecipe> recipes = new ArrayList<>();
+        for (Holder<EntityType<?>> mob : EntityResource.attunable(access)) {
+            SpawnEggItem egg = SpawnEggItem.byId(mob.value());
+            if (egg == null) {
+                continue;
+            }
+            EntityResource resource = new EntityResource(mob);
+            List<ItemStack> blanks = new ArrayList<>();
+            List<ItemStack> results = new ArrayList<>();
+            for (Holder.Reference<CrystalTier> tier : tiers) {
+                blanks.add(CrystalItem.createBlank(tier));
+                results.add(CrystalItem.create(tier, resource));
+            }
+            recipes.add(new CrystalAttunementRecipe(new ItemStack(egg), blanks, results, kills));
         }
         return recipes;
     }

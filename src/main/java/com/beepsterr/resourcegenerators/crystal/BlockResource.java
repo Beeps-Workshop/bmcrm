@@ -16,6 +16,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,6 +51,13 @@ public record BlockResource(Holder<Block> block) implements CrystalResource {
     @Override
     public Optional<Holder<Block>> pickBlock(HolderLookup.Provider registries, RandomSource random) {
         return com.beepsterr.resourcegenerators.Config.isBlacklisted(block) ? Optional.empty() : Optional.of(block);
+    }
+
+    @Override
+    public List<ItemStack> roll(ServerLevel level, BlockPos origin, ItemStack tool, RandomSource random) {
+        return pickBlock(level.registryAccess(), random)
+                .map(picked -> CrystalResource.rollBlock(level, origin, tool, picked.value()))
+                .orElseGet(List::of);
     }
 
     @Override

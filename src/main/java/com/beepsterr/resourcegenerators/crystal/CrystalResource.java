@@ -9,8 +9,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -26,7 +35,7 @@ import java.util.Optional;
  * <p>Both resolve, via {@link #pickBlock}, to a concrete block whose loot table the resonator rolls
  * (with a synthetic proper-tier tool, so ores yield their raw drops plus any Fortune from the crystal).
  */
-public sealed interface CrystalResource permits BlockResource, OreTagResource {
+public sealed interface CrystalResource permits BlockResource, EntityResource, OreTagResource {
 
     ResourceKind kind();
 
@@ -48,13 +57,41 @@ public sealed interface CrystalResource permits BlockResource, OreTagResource {
     /** Resolve to a concrete block to roll this cycle (random for tag-backed resources). */
     Optional<Holder<Block>> pickBlock(HolderLookup.Provider registries, RandomSource random);
 
+    /**
+     * Roll this resource's drops for one work cycle. Block-backed resources roll a block's break
+     * loot table with the synthetic {@code tool}; entity-backed ones roll a mob's death loot table.
+     * Empty means "nothing this cycle" (blacklisted, or a table that produced nothing).
+     */
+    List<ItemStack> roll(ServerLevel level, BlockPos origin, ItemStack tool, RandomSource random);
+
+    /** Shared by the block-backed kinds: roll a block's break table as if mined with {@code tool}. */
+    static List<ItemStack> rollBlock(ServerLevel level, BlockPos origin, ItemStack tool, Block block) {
+        LootTable table = level.getServer().reloadableRegistries().getLootTable(block.getLootTable());
+        LootParams params = new LootParams.Builder(level)
+                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(origin))
+                .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
+                .withParameter(LootContextParams.TOOL, tool)
+                .create(LootContextParamSets.BLOCK);
+        return dropped(table.getRandomItems(params));
+    }
+
+    /**
+     * Strip empty stacks. Pools with a {@code 0-n} count roll zero-count stacks, which report their
+     * item as air — harmless in the output buffer, but the resonator draws the first drop as a
+     * particle and an empty one would render as nothing.
+     */
+    static List<ItemStack> dropped(List<ItemStack> drops) {
+        return drops.stream().filter(stack -> !stack.isEmpty()).toList();
+    }
+
     /** A stable identity string used to distinguish crystal variants (e.g. for JEI subtypes). */
     String subtypeKey();
 
     /** The kinds of resource a crystal can represent; drives (de)serialization dispatch. */
     enum ResourceKind implements StringRepresentable {
         ORE_TAG("ore_tag"),
-        BLOCK("block");
+        BLOCK("block"),
+        ENTITY("entity");
 
         private final String name;
 
@@ -71,6 +108,7 @@ public sealed interface CrystalResource permits BlockResource, OreTagResource {
             return switch (this) {
                 case ORE_TAG -> OreTagResource.MAP_CODEC;
                 case BLOCK -> BlockResource.MAP_CODEC;
+                case ENTITY -> EntityResource.MAP_CODEC;
             };
         }
 
@@ -87,6 +125,7 @@ public sealed interface CrystalResource permits BlockResource, OreTagResource {
                 switch (value.kind()) {
                     case ORE_TAG -> OreTagResource.STREAM_CODEC.encode(buf, (OreTagResource) value);
                     case BLOCK -> BlockResource.STREAM_CODEC.encode(buf, (BlockResource) value);
+                    case ENTITY -> EntityResource.STREAM_CODEC.encode(buf, (EntityResource) value);
                 }
             },
             buf -> {
@@ -94,6 +133,7 @@ public sealed interface CrystalResource permits BlockResource, OreTagResource {
                 return switch (kind) {
                     case ORE_TAG -> OreTagResource.STREAM_CODEC.decode(buf);
                     case BLOCK -> BlockResource.STREAM_CODEC.decode(buf);
+                    case ENTITY -> EntityResource.STREAM_CODEC.decode(buf);
                 };
             }
     );

@@ -14,6 +14,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,6 +50,13 @@ public record OreTagResource(TagKey<Block> oresTag) implements CrystalResource {
                     .toList();
             return valid.isEmpty() ? Optional.empty() : Optional.of(valid.get(random.nextInt(valid.size())));
         });
+    }
+
+    @Override
+    public List<ItemStack> roll(ServerLevel level, BlockPos origin, ItemStack tool, RandomSource random) {
+        return pickBlock(level.registryAccess(), random)
+                .map(block -> CrystalResource.rollBlock(level, origin, tool, block.value()))
+                .orElseGet(List::of);
     }
 
     @Override

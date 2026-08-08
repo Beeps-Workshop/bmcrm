@@ -37,6 +37,10 @@
     "bmcrm.jei.crystal_melting": "Crystal Melting",
     "bmcrm.jei.crystal_melting.yield": "A saturated crystal yields %s mB",
 
+    "bmcrm.jei.crystal_attunement": "Crystal Attunement",
+    "bmcrm.jei.crystal_attunement.kills": "Kill %s of them holding a blank crystal in your off hand,",
+    "bmcrm.jei.crystal_attunement.spawner": "or drain their spawner with one.",
+
     "block.bmcrm.crystal_infuser": "Crystal Infuser",
     "block.bmcrm.resonator": "Resonator",
     "block.bmcrm.placed_crystal": "Crystal",

@@ -3,6 +3,7 @@ package com.beepsterr.resourcegenerators.registry;
 import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.Config;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.EntityResource;
 import com.beepsterr.resourcegenerators.crystal.OreTagResource;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
 import net.minecraft.core.Holder;
@@ -10,6 +11,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -81,6 +83,13 @@ public final class ModCreativeTabs {
                 for (TagKey<Block> oreTag : oreMaterials) {
                     for (Holder.Reference<CrystalTier> tier : tiers) {
                         output.accept(CrystalItem.create(tier, new OreTagResource(oreTag)));
+                    }
+                }
+
+                // Mob crystals, after the ores, same grouping.
+                for (Holder<EntityType<?>> mob : EntityResource.attunable(params.holders())) {
+                    for (Holder.Reference<CrystalTier> tier : tiers) {
+                        output.accept(CrystalItem.create(tier, new EntityResource(mob)));
                     }
                 }
             })
