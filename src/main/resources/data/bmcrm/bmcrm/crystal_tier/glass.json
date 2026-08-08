@@ -1,7 +1,7 @@
 {
     "level": 1,
     "color": "#C6E2E9",
-    "roll_chance": 0.04,
+    "roll_chance": 0.05,
     "base_ingredient": { "tag": "sand" },
     "catalyst_ingredient": { "tag": "c:glass_blocks/cheap" },
     "resonance_capacity": 250

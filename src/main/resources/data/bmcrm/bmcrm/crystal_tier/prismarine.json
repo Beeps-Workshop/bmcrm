@@ -1,7 +1,7 @@
 {
     "level": 3,
     "color": "#5AC8B8",
-    "roll_chance": 0.12,
+    "roll_chance": 0.25,
     "base_ingredient": { "item": "bmcrm:shining_crystals" },
     "catalyst_ingredient": { "item": "minecraft:sea_lantern" },
     "resonance_capacity": 1000

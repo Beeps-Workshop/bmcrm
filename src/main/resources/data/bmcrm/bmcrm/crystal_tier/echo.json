@@ -1,7 +1,7 @@
 {
     "level": 4,
     "color": "#2E9AA6",
-    "roll_chance": 0.16,
+    "roll_chance": 0.35,
     "base_ingredient": { "item": "bmcrm:pulsing_pearl" },
     "catalyst_ingredient": { "item": "minecraft:echo_shard" },
     "resonance_capacity": 2000
