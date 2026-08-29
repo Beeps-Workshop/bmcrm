@@ -53,15 +53,12 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.PULSING_PEARL.get());
                 output.accept(ModItems.RESONATING_GEM.get());
 
-                var tiersOpt = params.holders().lookup(ModRegistries.CRYSTAL_TIER_KEY);
                 var blocksOpt = params.holders().lookup(Registries.BLOCK);
-                if (tiersOpt.isEmpty() || blocksOpt.isEmpty()) {
+                List<Holder.Reference<CrystalTier>> tiers = ModRegistries.loadedTiers(params.holders());
+                if (tiers.isEmpty() || blocksOpt.isEmpty()) {
                     return;
                 }
                 HolderLookup.RegistryLookup<Block> blocks = blocksOpt.get();
-                List<Holder.Reference<CrystalTier>> tiers = tiersOpt.get().listElements()
-                        .sorted(Comparator.comparingInt(t -> t.value().level()))
-                        .toList();
 
                 // Blank crystals, one per tier.
                 for (Holder.Reference<CrystalTier> tier : tiers) {

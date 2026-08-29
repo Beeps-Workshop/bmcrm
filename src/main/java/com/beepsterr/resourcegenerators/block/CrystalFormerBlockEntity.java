@@ -227,8 +227,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         if (stack.isEmpty() || level == null) {
             return false;
         }
-        var registry = level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY);
-        for (Holder.Reference<CrystalTier> tier : registry.holders().toList()) {
+        for (Holder.Reference<CrystalTier> tier : ModRegistries.loadedTiers(level.registryAccess())) {
             CrystalTier value = tier.value();
             if ((asBase ? value.base() : value.catalyst()).test(stack)) {
                 return true;
@@ -245,8 +244,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         if (base.isEmpty() || catalyst.isEmpty()) {
             return null;
         }
-        var registry = level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY);
-        for (Holder.Reference<CrystalTier> tier : registry.holders().toList()) {
+        for (Holder.Reference<CrystalTier> tier : ModRegistries.loadedTiers(level.registryAccess())) {
             CrystalTier value = tier.value();
             if (value.base().test(base) && value.catalyst().test(catalyst)) {
                 return tier;

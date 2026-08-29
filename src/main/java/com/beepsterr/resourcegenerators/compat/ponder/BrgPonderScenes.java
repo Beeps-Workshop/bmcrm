@@ -27,7 +27,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -732,9 +731,8 @@ public final class BrgPonderScenes {
         if (mc.level == null) {
             return List.of();
         }
-        return mc.level.registryAccess().registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY).holders()
+        return ModRegistries.loadedTiers(mc.level.registryAccess()).stream()
                 .filter(h -> !h.value().hidden())
-                .sorted(Comparator.comparingInt(h -> h.value().level()))
                 .toList();
     }
 

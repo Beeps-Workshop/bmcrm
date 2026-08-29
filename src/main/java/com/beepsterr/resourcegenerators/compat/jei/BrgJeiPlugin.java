@@ -120,9 +120,7 @@ public class BrgJeiPlugin implements IModPlugin {
     }
 
     private static List<Holder.Reference<CrystalTier>> sortedTiers(RegistryAccess access) {
-        return access.registryOrThrow(ModRegistries.CRYSTAL_TIER_KEY).holders()
-                .sorted(Comparator.comparingInt(h -> h.value().level()))
-                .toList();
+        return ModRegistries.loadedTiers(access);
     }
 
     private static List<CrystalFormingRecipe> forming(RegistryAccess access) {
