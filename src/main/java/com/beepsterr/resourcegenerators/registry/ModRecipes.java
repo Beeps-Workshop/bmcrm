@@ -1,6 +1,7 @@
 package com.beepsterr.resourcegenerators.registry;
 
 import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
+import com.beepsterr.resourcegenerators.crystal.FormingRecipe;
 import com.beepsterr.resourcegenerators.crystal.ResonanceInfusionRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -27,4 +28,11 @@ public final class ModRecipes {
 
     public static final Supplier<RecipeSerializer<ResonanceInfusionRecipe>> RESONANCE_INFUSION_SERIALIZER =
             SERIALIZERS.register("resonance_infusion", ResonanceInfusionRecipe.Serializer::new);
+
+    /** Crystal Former: base + catalyst -> an arbitrary item, for anything that isn't a tier. */
+    public static final Supplier<RecipeType<FormingRecipe>> FORMING =
+            TYPES.register("forming", () -> RecipeType.simple(BeepsResourceGenerators.rl("forming")));
+
+    public static final Supplier<RecipeSerializer<FormingRecipe>> FORMING_SERIALIZER =
+            SERIALIZERS.register("forming", FormingRecipe.Serializer::new);
 }

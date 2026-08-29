@@ -6,6 +6,7 @@ import com.beepsterr.resourcegenerators.crystal.CrystalCharge;
 import com.beepsterr.resourcegenerators.crystal.CrystalData;
 import com.beepsterr.resourcegenerators.crystal.CrystalResource;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.FormingRecipe;
 import com.beepsterr.resourcegenerators.crystal.EntityResource;
 import com.beepsterr.resourcegenerators.crystal.OreTagResource;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
@@ -128,6 +129,12 @@ public class BrgJeiPlugin implements IModPlugin {
         for (Holder.Reference<CrystalTier> tier : sortedTiers(access)) {
             recipes.add(new CrystalFormingRecipe(
                     tier.value().base(), tier.value().catalyst(), CrystalItem.createBlank(tier)));
+        }
+        // Datapack recipes for the same machine, whose results are ordinary items.
+        for (var holder : Minecraft.getInstance().level.getRecipeManager()
+                .getAllRecipesFor(ModRecipes.FORMING.get())) {
+            FormingRecipe recipe = holder.value();
+            recipes.add(new CrystalFormingRecipe(recipe.base(), recipe.catalyst(), recipe.result()));
         }
         return recipes;
     }

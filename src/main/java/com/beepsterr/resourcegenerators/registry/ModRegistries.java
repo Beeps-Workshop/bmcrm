@@ -2,6 +2,7 @@ package com.beepsterr.resourcegenerators.registry;
 
 import com.beepsterr.resourcegenerators.BeepsResourceGenerators;
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.FormingRecipe;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -63,5 +64,6 @@ public final class ModRegistries {
                     "{} crystal tier(s) failed to load and are being ignored: {}",
                     broken.size(), String.join(", ", broken));
         }
+        FormingRecipe.warnAboutShadowed(event.getServer());
     }
 }

@@ -1,9 +1,11 @@
 package com.beepsterr.resourcegenerators.block;
 
 import com.beepsterr.resourcegenerators.crystal.CrystalTier;
+import com.beepsterr.resourcegenerators.crystal.FormingRecipe;
 import com.beepsterr.resourcegenerators.inventory.SidedItemHandler;
 import com.beepsterr.resourcegenerators.item.CrystalItem;
 import com.beepsterr.resourcegenerators.registry.ModBlockEntities;
+import com.beepsterr.resourcegenerators.registry.ModRecipes;
 import com.beepsterr.resourcegenerators.registry.ModRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,11 +34,14 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Block entity for the Crystal Former. Three slots — base (0), catalyst (1), output (2) — and
  * a progress timer. Each tick it looks for a tier whose base+catalyst ingredients match the
  * input slots, and once progress completes, consumes one of each and outputs a blank crystal
- * of that tier.
+ * of that tier. Failing a tier match it looks for a {@link FormingRecipe} — a datapack recipe
+ * for the same two slots that produces an arbitrary item.
  */
 public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -49,8 +55,10 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     /** Power supply: solid fuel (furnace-style) or a filled RF/FE buffer. Required to make progress. */
     private final MachineFuel fuel = new MachineFuel();
 
-    /** Forming a crystal takes a long time — ~120 seconds. */
-    private static final int DEFAULT_MAX_PROGRESS = 2400;
+    /** Forming a crystal takes a long time — ~120 seconds; a recipe may set its own duration. */
+    private static final int DEFAULT_MAX_PROGRESS = FormingRecipe.DEFAULT_DURATION;
+    /** Fill tint for a datapack recipe, which has no tier colour of its own. */
+    private static final int NEUTRAL_FORMING_COLOR = 0xC6E2E9;
     /** How often (ticks) to sync fill progress to clients while forming; the client interpolates between. */
     private static final int SYNC_INTERVAL = 20;
 
@@ -79,8 +87,8 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
             return switch (slot) {
                 case SLOT_OUTPUT -> false;                     // code-filled only
                 case SLOT_FUEL -> MachineFuel.isFuel(stack);
-                case SLOT_BASE -> isBaseItem(stack);           // must be some tier's base
-                case SLOT_CATALYST -> isCatalystItem(stack);   // must be some tier's catalyst
+                case SLOT_BASE -> isBaseItem(stack);           // some tier's or recipe's base
+                case SLOT_CATALYST -> isCatalystItem(stack);   // some tier's or recipe's catalyst
                 default -> false;
             };
         }
@@ -171,13 +179,28 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CrystalFormerBlockEntity be) {
+        // Tiers first; a datapack recipe only gets the pair if no tier claimed it.
         Holder<CrystalTier> match = be.findMatchingTier(level);
-        ItemStack result = match == null ? ItemStack.EMPTY : CrystalItem.createBlank(match);
-        boolean hasRecipe = match != null && be.canOutput(result);
+        ItemStack result = ItemStack.EMPTY;
+        int duration = DEFAULT_MAX_PROGRESS;
+        int recipeColor = -1;
+        if (match != null) {
+            result = CrystalItem.createBlank(match);
+            recipeColor = match.value().color();
+        } else {
+            FormingRecipe recipe = be.findMatchingRecipe(level);
+            if (recipe != null) {
+                result = recipe.assemble(be.recipeInput(), level.registryAccess());
+                duration = Math.max(1, recipe.duration());
+                recipeColor = NEUTRAL_FORMING_COLOR; // no tier, so nothing to tint the fill with
+            }
+        }
+        boolean hasRecipe = !result.isEmpty() && be.canOutput(result);
+        be.maxProgress = duration;
         // Burn fuel furnace-style (lit fuel drains every tick); a tick advances only when lit + work.
         boolean powered = be.fuel.tick(hasRecipe, be.inventory, SLOT_FUEL);
         boolean forming = hasRecipe && powered;
-        int color = forming ? match.value().color() : -1;
+        int color = forming ? recipeColor : -1;
 
         if (!hasRecipe) {
             boolean changed = be.fuel.isLit(); // a fuel still burning down while idle must be persisted
@@ -233,7 +256,36 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
                 return true;
             }
         }
+        for (RecipeHolder<FormingRecipe> holder : formingRecipes(level)) {
+            FormingRecipe recipe = holder.value();
+            if ((asBase ? recipe.base() : recipe.catalyst()).test(stack)) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    private List<RecipeHolder<FormingRecipe>> formingRecipes(Level level) {
+        return level.getRecipeManager().getAllRecipesFor(ModRecipes.FORMING.get());
+    }
+
+    /** The two input slots as recipe input. */
+    private FormingRecipe.Input recipeInput() {
+        return new FormingRecipe.Input(
+                inventory.getStackInSlot(SLOT_BASE), inventory.getStackInSlot(SLOT_CATALYST));
+    }
+
+    /** First datapack forming recipe matching the input slots, else null. */
+    @Nullable
+    private FormingRecipe findMatchingRecipe(Level level) {
+        FormingRecipe.Input input = recipeInput();
+        if (input.baseStack().isEmpty() || input.catalystStack().isEmpty()) {
+            return null;
+        }
+        return level.getRecipeManager()
+                .getRecipeFor(ModRecipes.FORMING.get(), input, level)
+                .map(RecipeHolder::value)
+                .orElse(null);
     }
 
     /** First tier whose base + catalyst ingredients both match the input slots, else null. */
@@ -340,7 +392,7 @@ public class CrystalFormerBlockEntity extends BlockEntity implements MenuProvide
         super.loadAdditional(tag, registries);
         inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
         progress = tag.getInt("Progress");
-        maxProgress = DEFAULT_MAX_PROGRESS; // constant per machine, not persisted state
+        maxProgress = DEFAULT_MAX_PROGRESS; // recomputed from the matched tier/recipe on the next tick
         fuel.load(tag);
     }
 
