@@ -17,7 +17,7 @@ sidebar_position: 2
 
 ## Optional integrations
 BMCRM doesn't require any other mods, but will automatically hook into these if they're installed:
-- [JEI](https://modrinth.com/mod/jei) - recipes for crystals, modulators and machines
+- [JEI](https://modrinth.com/mod/jei) - recipes for crystals, modulators, machines, crystal melting and mob crystals
 - [JADE](https://modrinth.com/mod/jade) - in-world tooltips for crystals
 - [Create](https://modrinth.com/mod/create) - Ponder scenes for BMCRM's blocks
 - [AlmostUnified](https://modrinth.com/mod/almostunified) - respects altered outputs

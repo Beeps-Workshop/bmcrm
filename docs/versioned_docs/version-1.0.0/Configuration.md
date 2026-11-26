@@ -48,23 +48,3 @@ workIntervalTicks = 400
 ```
 Ticks between Resonator work cycles (20 ticks = 1 second). Higher values mean slower generation.
 Range: `20`–`24000`.
-
-### machineEnergyCapacity
-```toml
-machineEnergyCapacity = 1000
-```
-Small internal RF/FE buffer on the Crystal Former and Infuser. When it fills, it's spent as
-fuel (see `machineEnergyBurnTicks`).
-
-### machineEnergyBurnTicks
-```toml
-machineEnergyBurnTicks = 200
-```
-Burn time (in ticks) a machine gains each time it converts a full energy buffer into fuel — the
-RF-powered equivalent of igniting a solid fuel item.
-
-### machineEnergyMaxReceive
-```toml
-machineEnergyMaxReceive = 256
-```
-Max RF/FE a machine accepts per tick from an adjacent cable (`0` = no incoming-rate limit).

@@ -33,6 +33,5 @@ Resonators end up both resonating the same crystal, the crystal is destroyed and
 — so keep Resonators spaced out if you're chaining multiple crystals.
 
 ## Feedback
-Successful cycles are mostly cosmetic flair: a shockwave ring, a staggered "pling" per crystal,
-note-block chimes, and a burst of colored dust (red if the result was auto-smelted). None of this
+Successful cycles are mostly cosmetic flair: a shockwave ring, a staggered "pling" per crystal, and a burst of colored dust (red if the result was auto-smelted). None of this
 affects the roll itself — it's just so you can tell when something happened.

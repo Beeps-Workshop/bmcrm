@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # The Crystal
@@ -16,3 +16,12 @@ re-placing it doesn't lose progress.
 A placed crystal tracks which Resonator has claimed it. This is what the Resonator's Tuning Fork
 preview visualizes, and what determines which Resonator's work cycle actually rolls it — see
 [Resonator: Crystal ownership](./Resonator.md#crystal-ownership).
+
+## Resonance
+Every time a Resonator works a crystal, the crystal stores 1 mB of resonance, whether or not the
+roll produced anything. It keeps storing until it reaches its tier's
+[resonance capacity](../Types/CrystalTiers.md), and keeps what it has stored when broken and
+re-placed. The tooltip shows how much it currently holds.
+
+Melting a crystal in the [Crystal Crucible](./CrystalCrucible.md) turns its stored resonance into
+Liquid Resonance — but uses up the crystal.

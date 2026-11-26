@@ -20,8 +20,7 @@ S
   Touch footprint, Fortune "+", etc. — see each [Modulator](./Modulators/SilkTouch.md) for its
   shape).
 - Right-click a **placed crystal** to check its status: it flashes the Resonator that owns it if
-  claimed, tells you it's unlinked if not yet claimed, or tells you it's uninfused if it has no
-  resource yet.
+  claimed, or tells you it's unlinked if not yet claimed.
 
 All of this is purely client-side feedback — it doesn't change how anything works, it just shows
 you what's already happening.

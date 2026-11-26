@@ -8,7 +8,7 @@ Infuses a blank crystal with a resource, turning it into a crystal that a Resona
 work for that resource.
 
 ## Slots
-The Infuser has 3 slots: material, crystal, and fuel.
+The Infuser has 2 slots: material and crystal.
 
 ## Infusing
 The Infuser feeds 1 unit of material into the crystal every 10 ticks; a crystal needs 32 units
@@ -25,7 +25,3 @@ Material detection is tag-based, so not every mod's items are guaranteed to work
    `c:raw_materials`. Whichever tag matches determines the resource, as long as a corresponding
    `c:ores/<material>` block actually exists and isn't on the ore blacklist (see
    [Configuration](../Configuration.md)).
-
-## Fuel
-See [Fuel & power](./Intro.md#fuel--power) — the Infuser burns solid fuel or RF/FE exactly like
-the Crystal Former.

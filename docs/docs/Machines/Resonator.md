@@ -13,19 +13,21 @@ falls back to a periodic rescan every 200 ticks (10 seconds) as a safety net.
 
 ## Work cycle
 Every `workIntervalTicks` (400 by default, i.e. 20 seconds — see
-[Configuration](../Configuration.md)), each crystal the Resonator has claimed rolls its tier's
-chance to generate its resource. That roll chance is reduced:
+[Configuration](../Configuration.md)), each crystal the Resonator has claimed stores 1 mB of
+[resonance](./PlacedCrystal.md#resonance) and rolls its tier's chance to generate its resource. That roll chance is reduced:
 - to `rainEfficiency` (0.5 by default) if the crystal or the Resonator is rained on
 - to `mobEfficiency` (0.5 by default) if a hostile mob is within `mobDisruptionRadius` (6 blocks
   by default) of the Resonator
 
 On a successful roll, the Resonator picks a random block from the resource's ore tag (skipping any
-[blacklisted ores](../Configuration.md#blacklistedores)), breaks it with a synthetic Netherite
+[blacklisted ores](../Configuration.md#blacklistedores)) and breaks it with a synthetic Netherite
 Pickaxe — Silk Touch if a [Silk Touch modulator](./Modulators/SilkTouch.md) covers it, otherwise
 Fortune equal to the number of overlapping
-[Fortune modulators](./Modulators/Fortune.md) (capped by `maxFortuneLevel`) — auto-smelts the
-result if an [Auto-Smelt modulator](./Modulators/AutoSmelt.md) applies, and drops the output into
-a 15-slot internal buffer that a hopper (or comparator) can read from.
+[Fortune modulators](./Modulators/Fortune.md) (capped by `maxFortuneLevel`). A
+[mob crystal](../Types/MobCrystals.md) rolls its mob's loot table instead, ignoring Silk Touch and
+Fortune. Either way, the result is auto-smelted if an
+[Auto-Smelt modulator](./Modulators/AutoSmelt.md) applies, and dropped into a 15-slot internal
+buffer that a hopper (or comparator) can read from.
 
 ## Crystal ownership
 An unclaimed crystal is claimed by the first Resonator whose scan reaches it. If two live

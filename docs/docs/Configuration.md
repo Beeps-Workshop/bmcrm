@@ -15,6 +15,20 @@ blacklistedOres = ["minecraft:nether_gold_ore"]
 Ore block ids that crystals should never generate from, and that won't be offered as crystals.
 Use this for any ores you do not want to be farmable via Resonators. The default blacklist includes Nether Gold Ore, which is an exception to how ores work normally.
 
+### mobCrystalBlacklist
+```toml
+mobCrystalBlacklist = ["minecraft:wither", "minecraft:warden", "minecraft:ender_dragon"]
+```
+Entity ids that can never be turned into [mob crystals](./Types/MobCrystals.md). Bosses are listed
+by default.
+
+### mobCrystalKills
+```toml
+mobCrystalKills = 16
+```
+How many mobs you have to kill with a blank crystal in your off hand to attune it to that mob.
+Draining a spawner attunes a crystal straight away and ignores this. Range: `1`–`1000`.
+
 ### rainEfficiency
 ```toml
 rainEfficiency = 0.5
@@ -53,7 +67,7 @@ Range: `20`–`24000`.
 ```toml
 machineEnergyCapacity = 1000
 ```
-Small internal RF/FE buffer on the Crystal Former and Infuser. When it fills, it's spent as
+Small internal RF/FE buffer on the Crystal Former, Infuser and Crucible. When it fills, it's spent as
 fuel (see `machineEnergyBurnTicks`).
 
 ### machineEnergyBurnTicks

@@ -38,7 +38,7 @@ if (shared) {
 
 // The last released version is served by default; the editable current docs are the unreleased
 // "Snapshots". Cut a new version with:  npm run docusaurus docs:version <version>
-const lastVersion = '1.0.0';
+const lastVersion = '1.3.0';
 
 // Only the default (last released) version is indexed. Every other version is a near-identical copy
 // of the same page at a different URL, so leaving them crawlable splits ranking signals and risks an

@@ -5,7 +5,7 @@ sidebar_position: 3
 # Crystal Infuser
 
 Infuses a blank crystal with a resource, turning it into a crystal that a Resonator can actually
-work for that resource.
+work for that resource. Mob crystals are made differently — see [Mob Crystals](../Types/MobCrystals.md).
 
 ## Slots
 The Infuser has 3 slots: material, crystal, and fuel.
@@ -20,7 +20,7 @@ material will continue feeding it.
 
 ## Material → resource detection
 Material detection is tag-based, so not every mod's items are guaranteed to work:
-1. If a datapack explicitly overrides the material, that takes priority.
+1. If a datapack explicitly [overrides the material](../Datapacks.md#infusion-overrides), that takes priority.
 2. Otherwise, the material's item tags are checked in order: `c:ingots` → `c:gems` → `c:dusts` →
    `c:raw_materials`. Whichever tag matches determines the resource, as long as a corresponding
    `c:ores/<material>` block actually exists and isn't on the ore blacklist (see

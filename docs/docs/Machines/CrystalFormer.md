@@ -19,6 +19,10 @@ tier's color).
 If the pair stops matching a valid tier mid-way, progress resets to 0. If fuel simply runs out
 while the pair is still valid, progress holds where it was rather than resetting.
 
+## Forming recipes
+Datapacks can add [forming recipes](../Datapacks.md#forming-recipes) that let the Former make
+other items from a base + catalyst pair. These can set their own forming time.
+
 ## Fuel
 See [Fuel & power](./Intro.md#fuel--power) — the Former burns solid fuel or RF/FE exactly like the
 Crystal Infuser.

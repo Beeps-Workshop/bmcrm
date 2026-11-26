@@ -13,7 +13,7 @@ running **NeoForge** (not Forge or Fabric) for **Minecraft 1.21.1**, and that th
 `mods` folder.
 
 ## Crystals aren't generating anything
-Big chance you are just getting unlucky, Glass crystals only have a 4% chance to generate anything.
+Big chance you are just getting unlucky, Glass crystals only have a 5% chance to generate anything.
 However, it could also be caused by a bug, so check these before anything:
 - Does the crystal look correct in the inventory? If you are seeing weird tooltips that is a telltale sign something is wrong.
 - Did you blacklist any ores in the config? If so, make sure you didn't blacklist anything you're currently using.
